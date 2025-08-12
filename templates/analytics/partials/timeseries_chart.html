@@ -1,0 +1,62 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h6 class="card-title mb-0">Tendencia</h6>
+    <div class="d-flex gap-2 align-items-center">
+      <label for="metricSelect" class="mb-0 small text-muted">Métrica</label>
+      <select id="metricSelect" class="form-control form-control-sm" style="width:auto">
+        <option value="revenue">Revenue</option>
+        <option value="credits">Créditos</option>
+        <option value="loads">Loads</option>
+        <option value="risk">Riesgo</option>
+      </select>
+    </div>
+  </div>
+  <div class="card-body">
+    <canvas id="timeseriesChart" height="90"></canvas>
+  </div>
+</div>
+<script>
+(function(){
+  const metricSelect = document.getElementById('metricSelect');
+  const ctx = document.getElementById('timeseriesChart').getContext('2d');
+  const baseUrl = "{% url 'analytics:api_timeseries' %}";
+  const range = "{{ range|default:'7d' }}";
+  let chart;
+
+  function colors(metric){
+    switch(metric){
+      case 'revenue': return { border: 'rgba(54, 162, 235, 1)', bg: 'rgba(54, 162, 235, 0.12)' };
+      case 'credits': return { border: 'rgba(75, 192, 192, 1)', bg: 'rgba(75, 192, 192, 0.12)' };
+      case 'loads': return { border: 'rgba(255, 159, 64, 1)', bg: 'rgba(255, 159, 64, 0.12)' };
+      case 'risk': return { border: 'rgba(255, 99, 132, 1)', bg: 'rgba(255, 99, 132, 0.12)' };
+      default: return { border: 'rgba(153, 102, 255, 1)', bg: 'rgba(153, 102, 255, 0.12)' };
+    }
+  }
+
+  async function load(metric){
+    const url = `${baseUrl}?metric=${encodeURIComponent(metric)}&range=${encodeURIComponent(range)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const labels = data.points.map(p => p.date);
+    const values = data.points.map(p => p.value);
+    const c = colors(metric);
+    if(!chart){
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets: [{ label: metric, data: values, tension: 0.25, borderColor: c.border, backgroundColor: c.bg, fill: true, pointRadius: 0 }] },
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { maxTicksLimit: 8 } }, y: { beginAtZero: true } } }
+      });
+    } else {
+      chart.data.labels = labels;
+      chart.data.datasets[0].label = metric;
+      chart.data.datasets[0].data = values;
+      chart.data.datasets[0].borderColor = c.border;
+      chart.data.datasets[0].backgroundColor = c.bg;
+      chart.update();
+    }
+  }
+
+  metricSelect.addEventListener('change', () => load(metricSelect.value));
+  load(metricSelect.value);
+})();
+</script>

@@ -1,0 +1,54 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<div class="content">
+  <div class="card ">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h4 class="card-title mb-0">Exámenes</h4>
+      <div>
+        {% if first_template %}
+          <button class="btn btn-primary" onclick="startAttempt({{ first_template.id }})">Hacer examen</button>
+        {% endif %}
+        {% if in_progress %}
+          <a class="btn btn-warning" href="{% url 'education:attempt_take' in_progress.id %}">Continuar</a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="card-body ">
+      <p class="text-muted">Elige un examen o usa los botones para comenzar/continuar.</p>
+      <div class="row">
+        {% for t in templates %}
+        <div class="col-md-4 col-sm-6 mb-3">
+          <div class="card ">
+            <div class="card-body ">
+              <h5 class="card-title">{{ t.name }}</h5>
+              <p class="card-category">Tema: {{ t.topic.name|default:'Mixto' }}</p>
+              <p class="card-category">Preguntas: {{ t.num_questions }}</p>
+              <a class="btn btn-primary" href="javascript:void(0)" onclick="startAttempt({{ t.id }})">Comenzar</a>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+          <p>No hay exámenes activos.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+async function startAttempt(templateId){
+  const resp = await fetch('{% url 'education:api_start_attempt' %}', {
+    method: 'POST', headers: {'Content-Type':'application/json','X-CSRFToken': '{{ csrf_token }}'},
+    body: JSON.stringify({template_id: templateId})
+  });
+  const data = await resp.json();
+  if(data.status === 'INSUFFICIENT_CREDITS'){
+    alert('No tienes créditos suficientes. Ve a Billing para comprar.');
+    window.location.href = '/billing/ui/plans/';
+    return;
+  }
+  if(data.status === 'OK'){
+    window.location.href = '/education/attempt/' + data.attempt_id;
+  }
+}
+</script>
+{% endblock %}

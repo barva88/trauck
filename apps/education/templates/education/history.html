@@ -1,0 +1,52 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<div class="content">
+  <div class="card ">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h4 class="card-title">Historial de Intentos</h4>
+      {% if in_progress %}
+        <a class="btn btn-warning" href="{% url 'education:attempt_take' in_progress.id %}">Continuar examen</a>
+      {% endif %}
+    </div>
+    <div class="card-body ">
+      <div class="table-responsive">
+        <table class="table">
+          <thead><tr><th>ID</th><th>Examen</th><th>Inicio</th><th>Fin</th><th>Score</th><th>Estado</th><th></th></tr></thead>
+          <tbody>
+            {% for a in page_obj %}
+            <tr>
+              <td>{{ a.id }}</td>
+              <td>{{ a.exam_template.name }}</td>
+              <td>{{ a.started_at }}</td>
+              <td>{{ a.finished_at|default:'-' }}</td>
+              <td>{{ a.score_pct|default:'-' }}%</td>
+              <td><span class="badge badge-default">{{ a.status }}</span></td>
+              <td>
+                {% if a.status == 'IN_PROGRESS' %}
+                  <a class="btn btn-sm btn-warning" href="{% url 'education:attempt_take' a.id %}">Continuar</a>
+                {% elif a.status == 'SUBMITTED' %}
+                  <a class="btn btn-sm btn-outline-primary" href="{% url 'education:attempt_result' a.id %}">Ver</a>
+                {% else %}-{% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7">Sin intentos.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <nav>
+        <ul class="pagination">
+          {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
+          {% endif %}
+          <li class="page-item disabled"><span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span></li>
+          {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>
+{% endblock %}

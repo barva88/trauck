@@ -1,0 +1,51 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content">
+  <div class="row">
+    <div class="col-12">
+      <h2 class="mb-4">Mi Billetera</h2>
+      {% if wallet %}
+      <div class="card">
+        <div class="card-body">
+          <h4>Saldo: {{ wallet.balance }} créditos</h4>
+          <a class="btn btn-info" href="{% url 'billing:portal_open' %}">Administrar suscripción</a>
+        </div>
+      </div>
+      <div class="card mt-3">
+        <div class="card-header">
+          <h5 class="title">Transacciones recientes</h5>
+        </div>
+        <div class="card-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Monto</th>
+                <th>Motivo</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for t in transactions %}
+              <tr>
+                <td>{{ t.created_at }}</td>
+                <td>{{ t.type }}</td>
+                <td>{{ t.signed_amount }}</td>
+                <td>{{ t.reason }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="4">Sin transacciones</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% else %}
+        <p>Debes iniciar sesión.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

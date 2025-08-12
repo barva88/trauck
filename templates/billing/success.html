@@ -1,0 +1,18 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% block title %}Pago exitoso{% endblock %}
+
+{% block content %}
+<div class="content">
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-body">
+          <h4>¡Gracias! Tu pago fue procesado correctamente.</h4>
+          <a class="btn btn-primary" href="{% url 'billing:wallet_page' %}">Ver billetera</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

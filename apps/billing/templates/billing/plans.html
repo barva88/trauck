@@ -1,0 +1,31 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content">
+  <div class="row">
+    <div class="col-12">
+      <h2 class="mb-4">Planes</h2>
+    </div>
+  </div>
+  <div class="row">
+    {% for plan in plans %}
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h4 class="card-title">{{ plan.name }}</h4>
+          <h5 class="card-subtitle mb-2 text-muted">${{ plan.price_usd }} / {% if plan.renewal_interval == 'MONTHLY' %}mes{% else %}único{% endif %}</h5>
+          <p>{{ plan.description }}</p>
+          <ul>
+            {% for b in plan.benefits.all %}
+            <li>{{ b.label }}</li>
+            {% endfor %}
+          </ul>
+          <a href="#" class="btn btn-primary">Elegir</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

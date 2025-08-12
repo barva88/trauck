@@ -1,0 +1,102 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %} Educación {% endblock title %}
+
+{% block content %}
+<div class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4 class="card-title">Resumen de Educación</h4>
+          <div>
+            {% if in_progress %}
+              <a href="{% url 'education:attempt_take' in_progress.id %}" class="btn btn-warning">Continuar examen</a>
+            {% endif %}
+            <a href="{% url 'education:bank' %}" class="btn btn-primary">Hacer examen</a>
+            <a href="{% url 'education:history' %}" class="btn btn-outline-secondary">Historial</a>
+          </div>
+        </div>
+        <div class="card-body">
+          <p>Usa el botón “Hacer examen” para comenzar. También puedes ir al historial a revisar intentos previos.</p>
+          <div class="row text-center">
+            <div class="col-md-4">
+              <h6>Total sesiones</h6>
+              <h3>{{ total_sessions }}</h3>
+            </div>
+            <div class="col-md-4">
+              <h6>Último score</h6>
+              <h3>{{ last_score }}</h3>
+            </div>
+            <div class="col-md-4">
+              <h6>Tiempo total (min)</h6>
+              <h3>{{ total_time_minutes }}</h3>
+            </div>
+          </div>
+          <hr/>
+          <div class="row">
+            <div class="col-lg-6">
+              <div class="card card-chart">
+                <div class="card-header">
+                  <h5 class="card-category">Última sesión - Secciones</h5>
+                </div>
+                <div class="card-body">
+                  <canvas id="educationBarChart"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-6">
+              <div class="table-responsive">
+                <table class="table tablesorter">
+                  <thead class="text-primary">
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Tipo</th>
+                      <th>Score</th>
+                      <th>Duración</th>
+                      <th>Transcript</th>
+                      <th>Grabación</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for s in sessions %}
+                    <tr>
+                      <td>{{ s.created_at|date:'Y-m-d H:i' }}</td>
+                      <td>{{ s.exam_type }}</td>
+                      <td>{{ s.score_total }} {{ s.score_scale }}</td>
+                      <td>{{ s.duration_seconds }}s</td>
+                      <td>{% if s.transcript_url %}<a href="{{ s.transcript_url }}" target="_blank">Ver</a>{% else %}-{% endif %}</td>
+                      <td>{% if s.recording_url %}<a href="{{ s.recording_url }}" target="_blank">Escuchar</a>{% else %}-{% endif %}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center">Sin sesiones</td></tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block extrajs %}
+<script src="{% static 'assets/js/plugins/chartjs.min.js' %}"></script>
+<script>
+  const breakdown = {{ last_breakdown|default:'[]'|safe }};
+  const labels = breakdown.map(b => b.label || b.section || 'Sección');
+  const values = breakdown.map(b => b.value || b.score || 0);
+  const ctx = document.getElementById('educationBarChart').getContext('2d');
+  if (ctx) {
+    new Chart(ctx, {
+      type: 'bar',
+      data: { labels, datasets: [{ label: 'Score por sección', data: values, backgroundColor: '#1d8cf8' }] },
+      options: { responsive: true }
+    });
+  }
+</script>
+{% endblock extrajs %}

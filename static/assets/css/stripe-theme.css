@@ -1,0 +1,124 @@
+:root{
+  --bg: #0a0b0d;
+  --panel: #0f1115;
+  --muted: #99a1b3;
+  --text: #e5e7ef;
+  --brand: #635bff; /* Stripe indigo */
+  --brand-2: #00d4ff;
+  --success: #00c2a8;
+  --danger: #ff4d6d;
+  --warning: #ffb020;
+  --border: #1a1d23;
+  --sidebar-w: 260px;
+}
+
+body.stripe-ui{
+  background: linear-gradient(180deg, #0b0d12 0%, #0a0b0d 100%);
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+/* Layout */
+body.stripe-ui .wrapper{ width: 100%; }
+body.stripe-ui .sidebar{
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: var(--sidebar-w);
+  z-index: 1030;
+  background: transparent;
+}
+body.stripe-ui .sidebar .sidebar-wrapper{
+  height: 100%;
+  overflow-y: auto;
+  background: rgba(255,255,255,0.02);
+  border-right: 1px solid var(--border);
+}
+body.stripe-ui .main-panel{
+  margin-left: var(--sidebar-w);
+  width: calc(100% - var(--sidebar-w));
+  background: transparent;
+  min-height: 100vh;
+}
+body.stripe-ui .content{ padding: 24px; }
+
+/* Sidebar text */
+body.stripe-ui .sidebar .logo .simple-text{ color: var(--muted); }
+body.stripe-ui .sidebar .nav li > a{ color: var(--text); border-radius: 10px; margin: 4px 10px; padding: 10px 12px; }
+body.stripe-ui .sidebar .nav li.active > a, body.stripe-ui .sidebar .nav li:hover > a{ background: rgba(99,91,255,0.12); color: var(--brand); }
+
+/* Top nav */
+body.stripe-ui .navbar{
+  background: rgba(10,11,13,0.85) !important;
+  backdrop-filter: saturate(180%) blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+body.stripe-ui .navbar .navbar-brand{ color: var(--text); }
+
+/* Cards / Panels */
+body.stripe-ui .card{
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+body.stripe-ui .card .card-header{ border-bottom: 1px solid var(--border); }
+body.stripe-ui .card .card-title{ color: var(--text); }
+
+/* Tables */
+body.stripe-ui table.table{ color: var(--text); }
+body.stripe-ui table.table thead th{
+  color: var(--muted);
+  border-color: var(--border);
+  font-weight: 600;
+}
+body.stripe-ui table.table tbody td{ border-color: var(--border); }
+body.stripe-ui table.table tbody tr:hover{ background: rgba(255,255,255,0.02); }
+
+/* Buttons */
+body.stripe-ui .btn{ border-radius: 8px; }
+body.stripe-ui .btn-primary{ background: var(--brand); border-color: var(--brand); }
+body.stripe-ui .btn-outline-primary{ border-color: var(--brand); color: var(--brand); }
+body.stripe-ui .btn-outline-primary:hover{ background: rgba(99,91,255,0.14); }
+
+/* Forms */
+body.stripe-ui .form-control{ background: #0c0f14; border-color: var(--border); color: var(--text); }
+body.stripe-ui .form-control:focus{ border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand); }
+
+/* Headings */
+body.stripe-ui h1, body.stripe-ui h2, body.stripe-ui h3, body.stripe-ui h4, body.stripe-ui h5, body.stripe-ui h6{ color: var(--text); }
+
+/* Links */
+body.stripe-ui a{ color: var(--brand); }
+
+/* KPI cards tweak */
+body.stripe-ui .card-stats .card-body{
+  background: linear-gradient(180deg, rgba(99,91,255,0.08), rgba(99,91,255,0.02));
+  border-radius: 12px;
+}
+
+/* Badges / statuses */
+.badge{ display:inline-block; padding:.35rem .5rem; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.badge-soft-success{ color: var(--success); background: rgba(0,194,168,.12); }
+.badge-soft-primary{ color: var(--brand); background: rgba(99,91,255,.12); }
+.badge-soft-danger{ color: var(--danger); background: rgba(255,77,109,.12); }
+.badge-soft-warning{ color: var(--warning); background: rgba(255,176,32,.12); }
+.status-paid{ color: var(--success); }
+.status-refunded{ color: var(--brand-2); }
+.status-failed{ color: var(--danger); }
+
+/* Dividers */
+body.stripe-ui hr{ border-color: var(--border); }
+
+/* Hide theme switcher & fixed plugin */
+body.stripe-ui .fixed-plugin{ display:none !important; }
+body.stripe-ui .theme-switch{ display:none !important; }
+
+/* Responsive sidebar */
+@media (max-width: 991.98px){
+  body.stripe-ui .sidebar{ transform: translateX(-100%); transition: transform .25s ease; }
+  body.stripe-ui .sidebar.open{ transform: translateX(0); }
+  body.stripe-ui .main-panel{ margin-left: 0; width: 100%; }
+}

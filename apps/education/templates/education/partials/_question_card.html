@@ -1,0 +1,24 @@
+<div class="card mb-3">
+  <div class="card-body ">
+    <p>{{ item.text }}</p>
+    {% if item.image %}
+      <img src="{{ item.image }}" alt="question image" class="img-fluid mb-2" />
+    {% endif %}
+    <div>
+      {% if item.type == 'TF' %}
+        <label class="mr-3"><input type="radio" name="q_{{ item.question_id }}" value="true"> Verdadero</label>
+        <label><input type="radio" name="q_{{ item.question_id }}" value="false"> Falso</label>
+      {% elif item.type == 'SC' %}
+        {% for ch in item.choices %}
+          <div class="form-check">
+            <label class="form-check-label">
+              <input class="form-check-input" type="radio" name="q_{{ item.question_id }}" value="{{ ch.key }}">
+              <span class="form-check-sign"><span class="check"></span></span>
+              {{ ch.text }}
+            </label>
+          </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+</div>

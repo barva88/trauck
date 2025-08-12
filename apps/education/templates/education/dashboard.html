@@ -1,0 +1,60 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% block content %}
+<div class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card ">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4 class="card-title">Resumen de Educación</h4>
+          <div>
+            <a href="{% url 'education:bank' %}" class="btn btn-primary">Hacer examen</a>
+            <a href="{% url 'education:history' %}" class="btn btn-outline-secondary">Historial</a>
+          </div>
+        </div>
+        <div class="card-body ">
+          <div class="row">
+            <div class="col-sm-3">
+              <div class="card card-stats"><div class="card-body "><p class="card-category">Intentos totales</p><h3 class="card-title">{{ stats.total_attempts }}</h3></div></div>
+            </div>
+            <div class="col-sm-3">
+              <div class="card card-stats"><div class="card-body "><p class="card-category">Tasa de aprobación</p><h3 class="card-title">{{ stats.pass_rate|floatformat:2 }}%</h3></div></div>
+            </div>
+            <div class="col-sm-3">
+              <div class="card card-stats"><div class="card-body "><p class="card-category">Último score</p><h3 class="card-title">{{ stats.last_score|default:"-" }}</h3></div></div>
+            </div>
+          </div>
+          <hr>
+          <h5 class="mb-2">Intentos recientes</h5>
+          <div class="table-responsive">
+            <table class="table">
+              <thead><tr><th>Fecha</th><th>Examen</th><th>Score</th><th>Estado</th><th></th></tr></thead>
+              <tbody>
+              {% if recent_attempts %}
+                {% for a in recent_attempts %}
+                  <tr>
+                    <td>{{ a.started_at|date:'Y-m-d H:i' }}</td>
+                    <td>{{ a.exam_template.name }}</td>
+                    <td>{% if a.score_pct %}{{ a.score_pct }}%{% else %}-{% endif %}</td>
+                    <td>{{ a.get_status_display|default:a.status }}</td>
+                    <td>
+                      {% if a.status == 'IN_PROGRESS' %}
+                        <a class="btn btn-sm btn-warning" href="{% url 'education:attempt_take' a.id %}">Continuar</a>
+                      {% elif a.status == 'SUBMITTED' %}
+                        <a class="btn btn-sm btn-outline-info" href="{% url 'education:attempt_result' a.id %}">Ver resultado</a>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr><td colspan="5">Sin intentos aún.</td></tr>
+              {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

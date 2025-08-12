@@ -1,0 +1,50 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% block title %}Billetera{% endblock %}
+
+{% block content %}
+<div class="content">
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title">Mi billetera</h5>
+        </div>
+        <div class="card-body">
+          {% if wallet %}
+            <p>Balance: <strong>{{ wallet.balance }}</strong> créditos</p>
+            <h6>Movimientos recientes</h6>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Tipo</th>
+                  <th>Monto</th>
+                  <th>Motivo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for t in transactions %}
+                  <tr>
+                    <td>{{ t.created_at }}</td>
+                    <td>{{ t.type }}</td>
+                    <td>{{ t.signed_amount }}</td>
+                    <td>{{ t.reason }}</td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="4">Sin movimientos.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          {% else %}
+            <p>Inicia sesión para ver tu billetera.</p>
+          {% endif %}
+          <a class="btn btn-secondary" href="{% url 'billing:plans_page' %}">Ver planes</a>
+          <a class="btn btn-info" href="{% url 'billing:portal_open' %}">Abrir Portal de Facturación</a>
+          <a class="btn btn-danger" href="{% url 'billing:refunds_page' %}">Solicitar reembolso</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

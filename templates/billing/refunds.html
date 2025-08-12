@@ -1,0 +1,41 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% block title %}Reembolsos{% endblock %}
+
+{% block content %}
+<div class="content">
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title">Solicitar reembolso</h5>
+        </div>
+        <div class="card-body">
+          {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+          {% endif %}
+          {% if success %}
+            <div class="alert alert-success">{{ success }}</div>
+          {% endif %}
+          <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+              <label for="purchase_id">Compra</label>
+              <select name="purchase_id" id="purchase_id" class="form-control">
+                {% for p in eligible %}
+                  <option value="{{ p.id }}">#{{ p.id }} - {% if p.plan %}Plan {{ p.plan.name }}{% endif %}{% if p.credit_pack %}Pack {{ p.credit_pack.name }}{% endif %} - ${{ p.amount_usd }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="id_reason_text">Motivo (opcional)</label>
+              {{ form.reason_text }}
+            </div>
+            <button type="submit" class="btn btn-danger">Solicitar reembolso</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

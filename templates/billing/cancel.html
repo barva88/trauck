@@ -1,0 +1,18 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% block title %}Pago cancelado{% endblock %}
+
+{% block content %}
+<div class="content">
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-body">
+          <h4>El pago fue cancelado.</h4>
+          <a class="btn btn-secondary" href="{% url 'billing:plans_page' %}">Volver a planes</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

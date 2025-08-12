@@ -1,0 +1,58 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %} Load Detail {% endblock title %}
+
+{% block content %}
+<div class="content">
+  <div class="row">
+    <div class="col-md-8 ml-auto mr-auto">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title">Load Details</h4>
+        </div>
+        <div class="card-body">
+          <dl class="row">
+            <dt class="col-sm-4">Origin</dt>
+            <dd class="col-sm-8">{{ load.origin }}</dd>
+
+            <dt class="col-sm-4">Destination</dt>
+            <dd class="col-sm-8">{{ load.destination }}</dd>
+
+            <dt class="col-sm-4">Pickup Date</dt>
+            <dd class="col-sm-8">{{ load.pickup_date }}</dd>
+
+            <dt class="col-sm-4">Delivery Date</dt>
+            <dd class="col-sm-8">{{ load.delivery_date }}</dd>
+
+            <dt class="col-sm-4">Status</dt>
+            <dd class="col-sm-8">
+              <span class="badge badge-{% if load.status == 'pending' %}warning{% elif load.status == 'assigned' %}info{% elif load.status == 'delivered' %}success{% else %}danger{% endif %}">
+                {{ load.get_status_display }}
+              </span>
+            </dd>
+
+            <dt class="col-sm-4">Carrier</dt>
+            <dd class="col-sm-8">
+              {% if load.carrier %}
+                {{ load.carrier.name }}
+              {% else %}
+                ---
+              {% endif %}
+            </dd>
+
+            <dt class="col-sm-4">Broker</dt>
+            <dd class="col-sm-8">{{ load.broker.name }}</dd>
+
+            <dt class="col-sm-4">Rate</dt>
+            <dd class="col-sm-8">${{ load.rate }}</dd>
+          </dl>
+        </div>
+        <div class="card-footer">
+          <a href="{% url 'loads:index' %}" class="btn btn-secondary">Back to list</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

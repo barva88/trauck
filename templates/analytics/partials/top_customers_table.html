@@ -1,0 +1,27 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h6 class="card-title mb-0">Top clientes</h6>
+  </div>
+  <div class="card-body">
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th class="text-right">Revenue</th>
+          <th class="text-right">Créditos consumidos</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in top_customers %}
+          <tr>
+            <td>{{ c.username }}</td>
+            <td class="text-right">${{ c.revenue|floatformat:2 }}</td>
+            <td class="text-right">{{ c.credits_consumed }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="3">Sin datos</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,63 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %} Brokers {% endblock title %}
+
+{% block content %}
+<div class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4 class="card-title">Brokers List</h4>
+          <div>
+            <a href="?verified=1" class="btn btn-success btn-sm {% if show_verified == '1' %}active{% endif %}">Verificados</a>
+            <a href="?verified=0" class="btn btn-danger btn-sm {% if show_verified == '0' %}active{% endif %}">No Verificados</a>
+            <a href="?" class="btn btn-secondary btn-sm {% if not show_verified %}active{% endif %}">Todos</a>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table tablesorter">
+              <thead class="text-primary">
+                <tr>
+                  <th>Nombre</th>
+                  <th>Contacto</th>
+                  <th>Teléfono</th>
+                  <th>Email</th>
+                  <th>Verificado</th>
+                  <th>Cargas</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for broker in brokers %}
+                <tr>
+                  <td>{{ broker.name }}</td>
+                  <td>{{ broker.contact }}</td>
+                  <td>{{ broker.phone }}</td>
+                  <td>{{ broker.email }}</td>
+                  <td>
+                    {% if broker.is_verified %}
+                      <span class="badge badge-success">Sí</span>
+                    {% else %}
+                      <span class="badge badge-danger">No</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <span class="badge badge-info">{{ broker.loads_count }}</span>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="6" class="text-center">No brokers found.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

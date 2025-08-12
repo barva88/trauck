@@ -1,0 +1,88 @@
+<!-- filepath: templates/pages/profile.html -->
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %} Profile {% endblock title %}
+
+{% block content %}
+<div class="content">
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="title">Edit Profile</h5>
+        </div>
+        <div class="card-body">
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>Username</label>
+                  <input type="text" class="form-control" value="{{ user.username }}" disabled>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>Email</label>
+                  <input type="email" class="form-control" value="{{ user.email }}" disabled>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>Phone</label>
+                  {{ form.phone }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>Address</label>
+                  {{ form.address }}
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>Avatar</label>
+                  {% if profile.avatar %}
+                    <img src="{{ profile.avatar.url }}" class="img-thumbnail mb-2" style="max-width:100px;">
+                  {% endif %}
+                  {{ form.avatar }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>About Me</label>
+                  {{ form.bio }}
+                </div>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-fill btn-primary">Save</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card card-user">
+        <div class="card-body">
+          <div class="author text-center">
+            {% if profile.avatar %}
+              <img class="avatar" src="{{ profile.avatar.url }}" alt="Avatar">
+            {% else %}
+              <img class="avatar" src="{% static 'assets/img/default-avatar.png' %}" alt="Avatar">
+            {% endif %}
+            <h5 class="title mt-2">{{ user.get_full_name|default:user.username }}</h5>
+            <p class="description">{{ user.email }}</p>
+          </div>
+          <div class="card-description">
+            {{ profile.bio|default:"No bio yet." }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,8 @@
+<div class="d-flex gap-2 align-items-center">
+  <form method="get" class="form-inline d-flex gap-2">
+    <select name="range" onchange="this.form.submit()" class="form-control">
+      <option value="7d" {% if request.GET.range == '7d' %}selected{% endif %}>Últimos 7 días</option>
+      <option value="30d" {% if request.GET.range == '30d' %}selected{% endif %}>Últimos 30 días</option>
+    </select>
+  </form>
+</div>

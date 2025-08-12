@@ -1,0 +1,3 @@
+type,topic,text,difficulty,choices,correct_answer
+{% for q in rows %}{{ q.type }},{{ q.topic.name }},"{{ q.text|replace:'"','""' }}",{{ q.difficulty }},"{{ q.choices|safe }}",{{ q.correct_answer }}
+{% endfor %}

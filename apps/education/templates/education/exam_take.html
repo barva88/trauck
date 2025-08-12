@@ -1,0 +1,167 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<div class="content">
+  <div class="row">
+    <div class="col-lg-3">
+      {% include 'education/partials/_exam_nav.html' with nav=nav current_idx=current_idx %}
+    </div>
+    <div class="col-lg-9">
+      <div class="card ">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4 class="card-title">Intento #{{ attempt.id }}</h4>
+          <div class="d-flex align-items-center">
+            <span id="timer" class="badge badge-warning mr-2"></span>
+            <span class="badge badge-info">{{ current_idx|add:1 }}/{{ items_count }}</span>
+            {% if attempt.score_pct %}
+              <span class="badge badge-success ml-2">Puntuación: {{ attempt.score_pct }}%</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="card-body ">
+          <form id="examForm">
+            {% csrf_token %}
+            {% include 'education/partials/_question_card.html' with item=current_item %}
+            <div class="d-flex justify-content-between mt-4">
+              <button class="btn btn-secondary" type="button" onclick="prevQ()" {% if current_idx == 0 %}disabled{% endif %}>Anterior</button>
+              <button class="btn btn-info" type="button" onclick="nextQ()" {% if current_idx == items_count|add:-1 %}disabled{% endif %}>Siguiente</button>
+              <button class="btn btn-primary" type="button" onclick="return submitExam(event)">Enviar examen</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function getCookie(name){
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if(parts.length === 2) return parts.pop().split(';').shift();
+}
+function getCsrf(){
+  return getCookie('csrftoken') || (document.querySelector('input[name=csrfmiddlewaretoken]')||{}).value;
+}
+let currentIdx = {{ current_idx|default:0 }};
+const total = {{ items_count }};
+let remaining = {{ remaining_seconds|default:0 }};
+function showQuestion(idx){
+  saveCurrentSelection();
+  const url = new URL(window.location.href);
+  url.searchParams.set('q', idx);
+  window.location.href = url.toString();
+}
+function prevQ(){ if(currentIdx > 0) showQuestion(currentIdx-1); }
+function nextQ(){ if(currentIdx < total - 1) showQuestion(currentIdx+1); }
+function collectAnswers(){
+  const answers = [];
+  // collect current page radios
+  document.querySelectorAll('[name^="q_"]').forEach(function(input){
+    if(input.checked){
+      const qid = parseInt(input.name.replace('q_',''));
+      answers.push({question_id: qid, selected: input.value});
+    }
+  });
+  // merge with saved
+  for(let i=0;i<localStorage.length;i++){
+    const k = localStorage.key(i);
+    if(k && k.startsWith('attempt_{{ attempt.id }}_q_')){
+      const qid = parseInt(k.split('_q_')[1]);
+      const val = localStorage.getItem(k);
+      if(!answers.find(a=>a.question_id===qid)){
+        answers.push({question_id: qid, selected: val});
+      }
+    }
+  }
+  return answers;
+}
+function saveCurrentSelection(){
+  const radios = document.querySelectorAll('[name^="q_"]');
+  radios.forEach(r => { if(r.checked){ localStorage.setItem('attempt_{{ attempt.id }}_q_' + r.name.replace('q_',''), r.value); } });
+}
+function restoreSelection(){
+  const radios = document.querySelectorAll('[name^="q_"]');
+  radios.forEach(r => {
+    const key = 'attempt_{{ attempt.id }}_q_' + r.name.replace('q_','');
+    const saved = localStorage.getItem(key);
+    if(saved && r.value === saved){ r.checked = true; }
+  });
+}
+function firstMissingIndex(answers){
+  const ids = Array.from({length: total}, (_,i)=>i);
+  const answeredIds = new Set(answers.map(a=>a.question_id));
+  for(let i=0;i<ids.length;i++){
+    const qid = parseInt(localStorage.getItem('attempt_{{ attempt.id }}_order_'+i) || '0');
+  }
+  // Fallback: infer by checking radio presence on each question stored in localStorage
+  for(let i=0;i<total;i++){
+    const stored = localStorage.getItem('attempt_{{ attempt.id }}_q_index_'+i);
+    // not reliable; server will return exact index
+  }
+  return null;
+}
+async function doSubmit(answers){
+  try{
+    const resp = await fetch(window.location.pathname + '/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json','X-CSRFToken': getCsrf() },
+      credentials: 'same-origin',
+      body: JSON.stringify({answers})
+    });
+    if(resp.redirected){ window.location = resp.url; return; }
+    const ct = resp.headers.get('content-type') || '';
+    if(!resp.ok){
+      const txt = await resp.text();
+      alert('Error al enviar el examen ('+resp.status+').');
+      console.error(txt);
+      return;
+    }
+    if(ct.includes('application/json')){
+      const data = await resp.json();
+      if(data.status === 'INCOMPLETE'){
+        const idx = (data.missing_indices && data.missing_indices.length) ? data.missing_indices[0] : 0;
+        alert('Faltan respuestas por marcar. Te llevamos a la primera pregunta sin responder.');
+        showQuestion(idx);
+        return;
+      }
+      if(data.status === 'OK'){
+        Object.keys(localStorage).forEach(k=>{ if(k.startsWith('attempt_{{ attempt.id }}_q_')) localStorage.removeItem(k) });
+        window.location.href = window.location.pathname + '/result';
+        return;
+      }
+      if(data.status === 'INVALID_STATE'){
+        window.location.reload();
+      }
+    } else {
+      window.location.reload();
+    }
+  }catch(err){ console.error(err); alert('No se pudo enviar el examen. Revisa tu conexión.'); }
+}
+async function submitExam(e){
+  e.preventDefault();
+  saveCurrentSelection();
+  const answers = collectAnswers();
+  // client-side guard: ensure we have total answers
+  if(answers.length < total){
+    alert('Debes responder todas las preguntas antes de enviar.');
+    // Find first unanswered in this page flow: try to locate by scanning current and move next
+    nextQ();
+    return false;
+  }
+  await doSubmit(answers);
+  return false;
+}
+function tick(){
+  if(remaining <= 0){
+    const t = document.getElementById('timer'); if(t) t.innerText = '00:00';
+    submitExam(new Event('submit'));
+    return;
+  }
+  remaining -= 1;
+  const m = Math.floor(remaining/60).toString().padStart(2,'0');
+  const s = (remaining%60).toString().padStart(2,'0');
+  const t = document.getElementById('timer'); if(t) t.innerText = m + ':' + s;
+  setTimeout(tick, 1000);
+}
+window.addEventListener('DOMContentLoaded', ()=>{ restoreSelection(); tick(); });
+</script>
+{% endblock %}

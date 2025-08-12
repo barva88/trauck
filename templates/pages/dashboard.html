@@ -1,0 +1,202 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %} Dashboard {% endblock title %}
+
+{% block content %}
+<div class="content">
+
+  <!-- Gráficas -->
+  <div class="row">
+    <div class="col-lg-6">
+      <div class="card card-chart">
+        <div class="card-header">
+          <h5 class="card-category">Cargas completadas por mes</h5>
+          <h3 class="card-title"><i class="tim-icons icon-check-2 text-success"></i></h3>
+        </div>
+        <div class="card-body">
+          <canvas id="loadsLineChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card card-chart">
+        <div class="card-header">
+          <h5 class="card-category">Ingresos mensuales</h5>
+          <h3 class="card-title"><i class="tim-icons icon-credit-card text-warning"></i></h3>
+        </div>
+        <div class="card-body">
+          <canvas id="revenueBarChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-6">
+      <div class="card card-chart">
+        <div class="card-header">
+          <h5 class="card-category">Top 5 conductores</h5>
+          <h3 class="card-title"><i class="tim-icons icon-single-02 text-info"></i></h3>
+        </div>
+        <div class="card-body">
+          <canvas id="driversBarChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <!-- Panel de notificaciones -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-category">Notificaciones</h5>
+          <h3 class="card-title"><i class="tim-icons icon-bell-55 text-danger"></i></h3>
+        </div>
+        <div class="card-body">
+          <ul class="list-unstyled">
+            {% for n in notifications %}
+            <li class="mb-2">
+              <i class="{{ n.icon }} mr-2"></i> {{ n.text }}
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tablas -->
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title">Últimas 5 facturas</h4>
+        </div>
+        <div class="card-body table-responsive">
+          <table class="table tablesorter">
+            <thead class="text-primary">
+              <tr>
+                <th>Número</th>
+                <th>Cliente</th>
+                <th>Monto</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for inv in invoices %}
+              <tr>
+                <td>{{ inv.number }}</td>
+                <td>{{ inv.client }}</td>
+                <td>{{ inv.amount }}</td>
+                <td>
+                  {% if inv.status == "Pagada" %}
+                    <span class="badge badge-success">{{ inv.status }}</span>
+                  {% elif inv.status == "Pendiente" %}
+                    <span class="badge badge-warning">{{ inv.status }}</span>
+                  {% else %}
+                    <span class="badge badge-danger">{{ inv.status }}</span>
+                  {% endif %}
+                </td>
+                <td>{{ inv.date }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card mt-4">
+        <div class="card-header">
+          <h4 class="card-title">Últimos 5 viajes</h4>
+        </div>
+        <div class="card-body table-responsive">
+          <table class="table tablesorter">
+            <thead class="text-primary">
+              <tr>
+                <th>ID</th>
+                <th>Origen</th>
+                <th>Destino</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for trip in trips %}
+              <tr>
+                <td>{{ trip.id }}</td>
+                <td>{{ trip.origin }}</td>
+                <td>{{ trip.destination }}</td>
+                <td>{{ trip.date }}</td>
+                <td>
+                  {% if trip.status == "Completado" %}
+                    <span class="badge badge-success">{{ trip.status }}</span>
+                  {% elif trip.status == "En curso" %}
+                    <span class="badge badge-info">{{ trip.status }}</span>
+                  {% else %}
+                    <span class="badge badge-warning">{{ trip.status }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block extrajs %}
+<script src="{% static 'assets/js/plugins/chartjs.min.js' %}"></script>
+<script>
+  // Loads completadas por mes (línea)
+  var ctxLoads = document.getElementById('loadsLineChart').getContext('2d');
+  new Chart(ctxLoads, {
+    type: 'line',
+    data: {
+      labels: {{ loads_per_month.labels|safe }},
+      datasets: [{
+        label: 'Cargas completadas',
+        data: {{ loads_per_month.data|safe }},
+        borderColor: '#e14eca',
+        backgroundColor: 'rgba(225, 78, 202, 0.1)',
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: { responsive: true }
+  });
+
+  // Ingresos mensuales (barra)
+  var ctxRevenue = document.getElementById('revenueBarChart').getContext('2d');
+  new Chart(ctxRevenue, {
+    type: 'bar',
+    data: {
+      labels: {{ revenue_per_month.labels|safe }},
+      datasets: [{
+        label: 'Ingresos',
+        data: {{ revenue_per_month.data|safe }},
+        backgroundColor: '#1d8cf8'
+      }]
+    },
+    options: { responsive: true }
+  });
+
+  // Top 5 conductores (barra horizontal)
+  var ctxDrivers = document.getElementById('driversBarChart').getContext('2d');
+  new Chart(ctxDrivers, {
+    type: 'bar',
+    data: {
+      labels: [{% for d in top_drivers %}"{{ d.name }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+      datasets: [{
+        label: 'Viajes',
+        data: [{% for d in top_drivers %}{{ d.trips }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+        backgroundColor: '#f3a4b5'
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true
+    }
+  });
+</script>
+{% endblock extrajs %}

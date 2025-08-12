@@ -1,0 +1,75 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% block title %}Planes{% endblock %}
+
+{% block content %}
+<div class="content">
+  <div class="row">
+    <div class="col-md-10">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title">Planes disponibles</h5>
+        </div>
+        <div class="card-body">
+          {% if plans %}
+            <div class="row">
+              {% for plan in plans %}
+                <div class="col-md-4">
+                  <div class="card card-pricing">
+                    <div class="card-body">
+                      <h6 class="card-category">{{ plan.name }}</h6>
+                      <h1 class="card-title">${{ plan.price_usd }}</h1>
+                      <ul>
+                        {% for b in plan.benefits.all %}
+                          <li>{{ b.label }}</li>
+                        {% empty %}
+                          <li>{{ plan.description }}</li>
+                        {% endfor %}
+                      </ul>
+                      <button type="button" class="btn btn-primary" onclick="purchasePlan({{ plan.id }})">Comprar</button>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p>No hay planes activos.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// CSRF de cookie (Django)
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+function purchasePlan(planId) {
+  const payload = {
+    plan_id: planId,
+    success_url: "{{ success_url }}",
+    cancel_url: "{{ cancel_url }}"
+  };
+  fetch("{% url 'billing:checkout' %}", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    },
+    body: JSON.stringify(payload)
+  }).then(async (res) => {
+    const data = await res.json();
+    if (res.ok && data.url) {
+      window.location = data.url;
+    } else {
+      alert(data.error || 'Error iniciando checkout. Verifica que el plan tenga Stripe Price configurado y que estés autenticado.');
+    }
+  }).catch(() => alert('Error de red'));
+}
+</script>
+{% endblock %}
