@@ -1,0 +1,92 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% load tz %}
+{% block content %}
+<div class="content">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+          <h4 class="card-title mb-2 mb-sm-0">Comunicaciones</h4>
+          <form class="form-inline" method="get">
+            <input type="text" class="form-control mr-2 mb-2 mb-sm-0" name="q" value="{{ q }}" placeholder="Buscar resumen, ID, agente, usuario">
+            <select name="type" class="form-control mr-2 mb-2 mb-sm-0">
+              <option value="">Todos</option>
+              <option value="chat" {% if type == 'chat' %}selected{% endif %}>Chat</option>
+              <option value="call" {% if type == 'call' %}selected{% endif %}>Llamada</option>
+            </select>
+            <input type="text" class="form-control mr-2 mb-2 mb-sm-0" name="agent" value="{{ agent }}" placeholder="Agente">
+            <input type="date" class="form-control mr-2 mb-2 mb-sm-0" name="from" value="{{ date_from }}">
+            <input type="date" class="form-control mr-2 mb-2 mb-sm-0" name="to" value="{{ date_to }}">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+          </form>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table">
+              <thead class=" text-primary">
+                <tr>
+                  <th>Vía</th>
+                  <th>Inicio (local)</th>
+                  <th>Duración</th>
+                  <th>Agente</th>
+                  <th>Tokens</th>
+                  <th>Resumen</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for c in page_obj.object_list %}
+                <tr>
+                  <td>
+                    {% if c.comm_type == 'chat' %}
+                      <span class="badge badge-info">Chat</span>
+                    {% else %}
+                      <span class="badge badge-success">Llamada</span>
+                    {% endif %}
+                    {% if c.channel %}
+                      <span class="badge bg-dark ms-1">{{ c.channel }}</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ c.started_at|localtime|date:"Y-m-d H:i" }}</td>
+                  <td>
+                    {% if c.duration_seconds is not None %}
+                      {{ c.duration_seconds }}s
+                    {% else %}-{% endif %}
+                  </td>
+                  <td><code>{{ c.agent_id|default:'-' }}</code></td>
+                  <td>
+                    {% if c.tokens_total %}
+                      {{ c.tokens_total }}
+                    {% else %}-{% endif %}
+                  </td>
+                  <td>{{ c.summary|default:'-'|truncatechars:80 }}</td>
+                  <td><a class="btn btn-sm btn-outline-primary" href="{% url 'comms:detail' c.pk %}">Detalles</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center">No hay comunicaciones.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <nav aria-label="Comms pagination">
+            <ul class="pagination justify-content-end">
+              {% if page_obj.has_previous %}
+              <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&type={{ type }}&agent={{ agent }}&from={{ date_from }}&to={{ date_to }}">Anterior</a></li>
+              {% else %}
+              <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+              {% endif %}
+              <li class="page-item disabled"><span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span></li>
+              {% if page_obj.has_next %}
+              <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}&type={{ type }}&agent={{ agent }}&from={{ date_from }}&to={{ date_to }}">Siguiente</a></li>
+              {% else %}
+              <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+              {% endif %}
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

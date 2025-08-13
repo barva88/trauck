@@ -53,7 +53,7 @@
                     </ul>
                 </li>
                 <li class="dropdown nav-item">
-                    <a href="{% url 'admin:logout' %}" class="dropdown-toggle nav-link" data-toggle="dropdown">
+                    <a href="javascript:void(0)" class="dropdown-toggle nav-link" data-toggle="dropdown">
                         <div class="photo">
                             <img src="{% static 'assets/img/anime3.png' %}" alt="Profile Photo">
                         </div>
@@ -72,13 +72,13 @@
                         {% if request.user.is_superuser %}
                         <li class="nav-link"><a href="{% url 'admin:password_change' %}" class="dropdown-item">
                             Change Password</a></li>
-                        <li class="nav-link"><a href="{% url 'logout' %}" class="nav-item dropdown-item">
+                        <li class="nav-link"><a href="{% url 'account_logout' %}" class="nav-item dropdown-item">
                             Logout</a></li>
                         {% else %}
 
-                        <li><a href="{% url 'password_change' %}" class="dropdown-item">
+                        <li><a href="{% url 'account_change_password' %}" class="dropdown-item">
                                 <i class="feather icon-lock"></i> Change Password</a></li>
-                        <li><a href="{% url 'logout' %}" class="dropdown-item"><i class="feather icon-lock"></i>
+                        <li><a href="{% url 'account_logout' %}" class="dropdown-item"><i class="feather icon-lock"></i>
                                 Logout</a></li>
                         {% endif %}
                         {% endif %}

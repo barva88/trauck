@@ -1,0 +1,37 @@
+{% extends "account/base.html" %}
+{% load i18n widget_tweaks %}
+
+{% block content %}
+  <h3 class="mb-3">{% trans "Sign In" %}</h3>
+  <form method="post" action="{% url 'account_login' %}">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+    <div class="mb-3">
+      <label class="form-label" for="{{ form.login.id_for_label }}">{% trans "Email" %}</label>
+      {% render_field form.login class="form-control" placeholder="you@example.com" %}
+      {{ form.login.errors }}
+    </div>
+    <div class="mb-2">
+      <label class="form-label" for="{{ form.password.id_for_label }}">{% trans "Password" %}</label>
+      {% render_field form.password class="form-control" placeholder="••••••••" %}
+      {{ form.password.errors }}
+    </div>
+    <div class="form-check mb-3">
+      {% render_field form.remember class="form-check-input" %}
+      <label class="form-check-label" for="{{ form.remember.id_for_label }}">{% trans "Remember Me" %}</label>
+    </div>
+    {% if redirect_field_value %}
+      <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+    {% endif %}
+    <button class="btn btn-primary w-100" type="submit">{% trans "Sign In" %}</button>
+  </form>
+{% endblock %}
+
+{% block extra_links %}
+  <div class="d-flex justify-content-between">
+    <a href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a>
+    <a href="{% url 'account_signup' %}">{% trans "Create account" %}</a>
+  </div>
+{% endblock %}

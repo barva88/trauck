@@ -1,0 +1,75 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% block content %}
+<div class="content">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4 class="card-title mb-0">Detalle de Comunicación</h4>
+          <a href="{% url 'comms:inbox' %}" class="btn btn-sm btn-secondary">Volver</a>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <ul class="list-unstyled">
+                <li><strong>Vía:</strong> {{ obj.get_comm_type_display }}</li>
+                <li><strong>External ID:</strong> <code>{{ obj.external_id }}</code></li>
+                <li><strong>Agente:</strong> <code>{{ obj.agent_id|default:'-' }}</code></li>
+                <li><strong>Usuario:</strong> {{ obj.user|default:'-' }}</li>
+                <li><strong>Inicio:</strong> {{ obj.started_at|date:"Y-m-d H:i:s" }}</li>
+                <li><strong>Fin:</strong>
+                  {% if obj.ended_at %}
+                    {{ obj.ended_at|date:"Y-m-d H:i:s" }}
+                  {% else %}-{% endif %}
+                </li>
+                <li><strong>Duración:</strong> {% if obj.duration_seconds %}{{ obj.duration_seconds }}s{% else %}-{% endif %}</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <ul class="list-unstyled">
+                <li><strong>Tokens input:</strong> {{ obj.tokens_input|default_if_none:'-' }}</li>
+                <li><strong>Tokens output:</strong> {{ obj.tokens_output|default_if_none:'-' }}</li>
+                <li><strong>Tokens total:</strong> {{ obj.tokens_total|default_if_none:'-' }}</li>
+                <li><strong>Creado:</strong> {{ obj.created_at|date:"Y-m-d H:i:s" }}</li>
+                <li><strong>Actualizado:</strong> {{ obj.updated_at|date:"Y-m-d H:i:s" }}</li>
+              </ul>
+            </div>
+          </div>
+          <hr/>
+          <h5>Resumen</h5>
+          <p>{{ obj.summary|default:'-' }}</p>
+          <hr/>
+          <h5>Metadata</h5>
+          <pre class="bg-dark text-white p-3" style="white-space: pre-wrap;">{{ obj.metadata|default:"{}" }}</pre>
+          <hr>
+          <h5>Messages</h5>
+          <ul class="list-group mb-3">
+            {% for m in obj.messages.all %}
+              <li class="list-group-item d-flex justify-content-between align-items-start">
+                <div class="ms-2 me-auto">
+                  <div><span class="badge bg-secondary me-2">{{ m.role }}</span> {{ m.timestamp }}</div>
+                  <div>{{ m.text }}</div>
+                </div>
+              </li>
+            {% empty %}
+              <li class="list-group-item">No messages</li>
+            {% endfor %}
+          </ul>
+          <h5>Events</h5>
+          <ul class="list-group">
+            {% for e in obj.events.all %}
+              <li class="list-group-item">
+                <div class="small text-muted">{{ e.created_at }}</div>
+                <div><span class="badge bg-info">{{ e.event_type }}</span> <code>{{ e.idempotency_key }}</code></div>
+              </li>
+            {% empty %}
+              <li class="list-group-item">No events</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "account/base.html" %}
+{% load i18n widget_tweaks %}
+
+{% block content %}
+  <h3 class="mb-3">{% trans "Create Account" %}</h3>
+  <form method="post" action="{% url 'account_signup' %}">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    {% for field in form %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {% render_field field class="form-control" %}
+        {% if field.help_text %}<small class="form-text text-muted">{{ field.help_text|safe }}</small>{% endif %}
+        {{ field.errors }}
+      </div>
+    {% endfor %}
+
+    {% if redirect_field_value %}
+      <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+    {% endif %}
+
+    <button class="btn btn-primary w-100" type="submit">{% trans "Sign Up" %}</button>
+  </form>
+{% endblock %}
+
+{% block extra_links %}
+  <a href="{% url 'account_login' %}">{% trans "Already have an account? Sign in" %}</a>
+{% endblock %}

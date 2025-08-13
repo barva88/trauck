@@ -29,8 +29,8 @@
       .retell-actions .btn{min-width:140px}
       body.retell-lock{overflow:hidden}
       /* NEW: Chat panel styles */
-      .retell-chat-panel{position:fixed;right:20px;bottom:80px;width:320px;max-width:90vw;z-index:2147483646;display:none}
-      .retell-chat-card{background:#fff;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.25);overflow:hidden;display:flex;flex-direction:column}
+  .retell-chat-panel{position:fixed;right:20px;bottom:80px;width:320px;max-width:90vw;z-index:2147483647;display:none}
+  .retell-chat-card{position:relative;background:#fff;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.25);overflow:hidden;display:flex;flex-direction:column;z-index:2147483647}
       .retell-chat-header{padding:10px 12px;border-bottom:1px solid #eee;font-weight:700;display:flex;align-items:center;justify-content:space-between}
       .retell-chat-messages{padding:10px;max-height:40vh;min-height:200px;overflow:auto;background:#fafafa}
       .retell-chat-input{display:flex;gap:8px;padding:10px;border-top:1px solid #eee;background:#fff}
@@ -38,6 +38,25 @@
       .retell-bubble.user{background:#007bff;color:#fff;margin-left:auto}
       .retell-bubble.bot{background:#e9ecef;color:#212529;margin-right:auto}
       .retell-chat-header .btn{padding:4px 8px}
+  /* Ensure chat UI captures interactions */
+  .retell-chat-panel, .retell-chat-card, .retell-chat-card * { pointer-events: auto; }
+  .retell-chat-input input.form-control{
+    pointer-events:auto;
+    z-index:2147483647;
+    cursor:text;
+    caret-color:#212529;
+    color:#212529;
+    background:#fff;
+    user-select:text;
+    position:relative;
+  }
+  .retell-chat-input input.form-control:disabled,
+  .retell-chat-input input.form-control[readonly]{
+    opacity:1;
+    background:#fff;
+    color:#212529;
+    cursor:text;
+  }
     </style>
 </head>
 
@@ -62,18 +81,21 @@
     {% include 'includes/scripts.html' %}
     {% block extrajs %}{% endblock extrajs %}
 
-    <!-- NEW: Floating Retell chat button next to call button -->
-    <button id="retellChatBtn" class="btn btn-info retell-chat-btn" title="Chat">
-      <i class="fa fa-comments"></i>
-    </button>
+    {% if request.user.is_authenticated %}
+      <!-- NEW: Floating Retell chat button next to call button (only for logged-in users) -->
+      <button id="retellChatBtn" class="btn btn-info retell-chat-btn" title="Chat">
+        <i class="fa fa-comments"></i>
+      </button>
 
-    <!-- Floating Retell call button (visible on all pages) -->
-    <button id="retellCallBtn" class="btn btn-primary retell-call-btn" title="Llamar">
-      <i class="fa fa-phone"></i>
-    </button>
+      <!-- Floating Retell call button (only for logged-in users) -->
+      <button id="retellCallBtn" class="btn btn-primary retell-call-btn" title="Llamar">
+        <i class="fa fa-phone"></i>
+      </button>
+    {% endif %}
 
     <!-- Call modal overlay -->
-    <div id="retellCallOverlay" class="retell-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+  {% if request.user.is_authenticated %}
+  <div id="retellCallOverlay" class="retell-overlay" aria-hidden="true" role="dialog" aria-modal="true">
       <div class="retell-card">
         <img id="retellAvatar" class="retell-avatar" src="{% static 'img/trauck-assistance.png' %}" alt="Trauck Assistance" onerror="this.style.display='none';document.getElementById('retellAvatarFallback').style.display='inline-flex'">
         <div id="retellAvatarFallback" class="retell-avatar-fallback" style="display:none">TA</div>
@@ -85,9 +107,11 @@
         </div>
       </div>
     </div>
+  {% endif %}
 
     <!-- NEW: Chat panel (non-blocking) -->
-    <div id="retellChatPanel" class="retell-chat-panel" aria-hidden="true">
+  {% if request.user.is_authenticated %}
+  <div id="retellChatPanel" class="retell-chat-panel" aria-hidden="true">
       <div class="retell-chat-card">
         <div class="retell-chat-header">
           <span>Trauck Chat</span>
@@ -97,20 +121,23 @@
           </div>
         </div>
         <div id="retellChatMessages" class="retell-chat-messages"></div>
-        <div class="retell-chat-input">
-          <input id="retellChatText" type="text" class="form-control" placeholder="Escribe tu mensaje..." />
+        <div class="retell-chat-input" style="z-index:2147483647;position:relative;">
+          <input id="retellChatText" type="text" class="form-control" placeholder="Escribe tu mensaje..." tabindex="0" autofocus />
           <button id="retellChatSend" class="btn btn-primary"><i class="fa fa-paper-plane"></i></button>
         </div>
       </div>
     </div>
+  {% endif %}
 
     <!-- Local UMD bundles from node_modules copied into static/vendor/retell -->
     <script src="{% static 'vendor/retell/eventemitter3.umd.js' %}"></script>
     <!-- Shim globals expected by retell-client UMD -->
-    <script>
+  {% if request.user.is_authenticated %}
+  <script>
       if (!window.eventemitter3) { window.eventemitter3 = { EventEmitter: window.EventEmitter3 }; }
       else if (!window.eventemitter3.EventEmitter && window.EventEmitter3) { window.eventemitter3.EventEmitter = window.EventEmitter3; }
-    </script>
+  </script>
+  {% endif %}
     <script src="{% static 'vendor/retell/livekit-client.umd.js' %}"></script>
     <script>
       if (!window.livekitClient && window.LivekitClient) { window.livekitClient = window.LivekitClient; }
@@ -157,8 +184,17 @@
               const resp = await fetch('/comms/create-web-call/', {
                 method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
               });
+              if(resp.status === 401){ hideOverlay(); active=false; alert('Debes iniciar sesión para usar llamadas.'); return; }
+              const ctype = resp.headers.get('content-type') || '';
               const text = await resp.text();
-              if(!resp.ok){ hideOverlay(); active=false; alert('No se pudo iniciar la llamada: ' + text); return; }
+              if(!/application\/json/i.test(ctype)){
+                hideOverlay(); active=false; alert('Respuesta no válida del servidor.'); return;
+              }
+              if(!resp.ok){
+                try { const j = JSON.parse(text||'{}'); alert(j.error ? ('No se pudo iniciar la llamada: '+ j.error) : 'No se pudo iniciar la llamada.'); }
+                catch(_){ alert('No se pudo iniciar la llamada.'); }
+                hideOverlay(); active=false; return;
+              }
               let data = {}; try { data = JSON.parse(text || '{}'); } catch(_){ data = {}; }
               if(!data.access_token){ hideOverlay(); active=false; alert('Token no recibido: ' + text); return; }
 
@@ -191,7 +227,18 @@
         let chatSessionId = null;
         let chatOpen = false;
 
-        function showChat(){ chatPanel.style.display='block'; chatPanel.setAttribute('aria-hidden','false'); chatOpen = true; setTimeout(()=>chatInput?.focus?.(),0); }
+        function showChat(){
+          chatPanel.style.display='block';
+          chatPanel.setAttribute('aria-hidden','false');
+          chatOpen = true;
+          if (chatInput) {
+            chatInput.disabled = false;
+            chatInput.readOnly = false;
+            chatInput.removeAttribute('disabled');
+          }
+          if (chatSend) { chatSend.disabled = false; }
+          setTimeout(()=>{ try{ chatInput?.focus?.(); }catch(_){} },50);
+        }
         function hideChat(){ chatPanel.style.display='none'; chatPanel.setAttribute('aria-hidden','true'); chatOpen = false; }
         function appendMsg(role, text){
           const div = document.createElement('div');
@@ -203,29 +250,43 @@
         async function ensureChatSession(){
           if (chatSessionId) return chatSessionId;
           const resp = await fetch('/comms/open-web-chat/', { method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ agent_id: '{{ RETELL_CHAT_AGENT_ID|default:"" }}' }) });
-          if(!resp.ok){ const t = await resp.text(); throw new Error('No se pudo abrir chat: '+t); }
-          const data = await resp.json();
+          if(resp.status === 401) throw new Error('Debes iniciar sesión para usar chat.');
+          const ctype = resp.headers.get('content-type') || '';
+          const text = await resp.text();
+          if(!/application\/json/i.test(ctype)){ throw new Error('Respuesta no válida del servidor.'); }
+          if(!resp.ok){
+            try { const j = JSON.parse(text||'{}'); throw new Error(j.error ? ('No se pudo abrir chat: '+ j.error) : 'No se pudo abrir chat.'); }
+            catch(_){ throw new Error('No se pudo abrir chat.'); }
+          }
+          const data = JSON.parse(text||'{}');
           chatSessionId = data.chat_id; // use chat_id from backend
           return chatSessionId;
         }
-        async function sendChatMessage(){
+    async function sendChatMessage(){
           const msg = (chatInput.value || '').trim();
           if(!msg) return;
           chatInput.value = '';
           appendMsg('user', msg);
           try{
             await ensureChatSession();
-            chatInput.disabled = true; chatSend.disabled = true;
+      chatInput.disabled = true; chatSend.disabled = true;
             const resp = await fetch('/comms/send-web-chat/', { method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ chat_id: chatSessionId, message: msg, agent_id: '{{ RETELL_CHAT_AGENT_ID|default:"" }}' }) });
+            if(resp.status === 401){ appendMsg('bot', 'Debes iniciar sesión para usar chat.'); return; }
+            const ctype = resp.headers.get('content-type') || '';
             const text = await resp.text();
-            if(!resp.ok){ appendMsg('bot', 'Error enviando mensaje: ' + text); return; }
+            if(!/application\/json/i.test(ctype)){ appendMsg('bot', 'Respuesta no válida del servidor.'); return; }
+            if(!resp.ok){
+              try { const j = JSON.parse(text||'{}'); appendMsg('bot', j.error ? ('Error: '+ j.error) : 'Error enviando mensaje.'); }
+              catch(_){ appendMsg('bot', 'Error enviando mensaje.'); }
+              return;
+            }
             let data = {}; try{ data = JSON.parse(text || '{}'); }catch(_){ data = {}; }
             appendMsg('bot', data.reply || '');
           }catch(err){
             console.error(err);
             appendMsg('bot', err.message || String(err));
           }finally{
-            chatInput.disabled = false; chatSend.disabled = false; chatInput.focus();
+      chatInput.disabled = false; chatInput.readOnly = false; chatSend.disabled = false; chatInput.focus();
           }
         }
 
@@ -240,8 +301,23 @@
         });
         chatClose?.addEventListener('click', ()=> hideChat());
         chatMin?.addEventListener('click', ()=> hideChat());
-        chatSend?.addEventListener('click', sendChatMessage);
+  chatSend?.addEventListener('click', sendChatMessage);
         chatInput?.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendChatMessage(); } });
+  // Force-enable input on load (in case of stale disabled state)
+        if (chatInput) { chatInput.disabled = false; chatInput.readOnly = false; }
+        // Extra safeties: keep focus and enabled when interacting with the panel
+        function forceEnableFocus(){
+          if (!chatInput) return;
+          chatInput.disabled = false;
+          chatInput.readOnly = false;
+          try{ chatInput.focus(); }catch(_){ }
+        }
+        chatPanel?.addEventListener('mousedown', (e)=>{ e.stopPropagation(); forceEnableFocus(); });
+        chatPanel?.addEventListener('click', (e)=>{ e.stopPropagation(); forceEnableFocus(); });
+  chatInput?.addEventListener('mousedown', (e)=>{ e.stopPropagation(); forceEnableFocus(); });
+  chatInput?.addEventListener('click', (e)=>{ e.stopPropagation(); forceEnableFocus(); });
+  chatInput?.addEventListener('touchstart', (e)=>{ e.stopPropagation(); forceEnableFocus(); }, {passive:true});
+        chatInput?.addEventListener('blur', ()=>{ /* re-enable on blur just in case */ chatInput.disabled=false; chatInput.readOnly=false; });
         // ================== /Chat MVP ==================
       })();
     </script>

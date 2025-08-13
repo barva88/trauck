@@ -44,7 +44,7 @@ if RENDER_EXTERNAL_HOSTNAME:
 
 INSTALLED_APPS = [
     'jazzmin',
-    'admin_black.apps.AdminBlackConfig',
+    'admin_black',
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'dj_rest_auth',
     'dj_rest_auth.registration',
+    'widget_tweaks',  # for nicer form rendering in auth templates
 
     # My Apps
      # ...otras apps...
@@ -133,6 +134,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "config.context_processors.feature_flags",
                 "config.context_processors.retell_settings",
+                "config.context_processors.sidebar_menu",
             ],
         },
     },
@@ -166,7 +168,7 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': 'db.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         }
     }
 
@@ -211,6 +213,9 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
 
+
+# Help Django find static files from third-party apps (like admin_black) in development
+WHITENOISE_USE_FINDERS = True
 
 
 MEDIA_URL = '/media/'
@@ -275,10 +280,22 @@ LOGOUT_REDIRECT_URL = "/"
 RETELL_WEBHOOK_SECRET = os.environ.get('RETELL_WEBHOOK_SECRET', 'changeme')
 RETELL_ALLOWED_AGENT_IDS = os.environ.get('RETELL_ALLOWED_AGENT_IDS', '')
 
-# Retell API settings
-RETELL_API_KEY = os.getenv('RETELL_API_KEY', '')
-RETELL_DEFAULT_AGENT_ID = os.getenv('RETELL_DEFAULT_AGENT_ID', '')
-RETELL_CHAT_AGENT_ID = os.getenv('RETELL_CHAT_AGENT_ID', '')
+# Retell API settings (support a couple of aliases to avoid env naming mismatches)
+RETELL_API_KEY = (
+    os.getenv('RETELL_API_KEY')
+    or os.getenv('RETELL_TOKEN')
+    or ''
+)
+RETELL_DEFAULT_AGENT_ID = (
+    os.getenv('RETELL_DEFAULT_AGENT_ID')
+    or os.getenv('RETELL_AGENT_ID')
+    or ''
+)
+RETELL_CHAT_AGENT_ID = (
+    os.getenv('RETELL_CHAT_AGENT_ID')
+    or os.getenv('RETELL_AGENT_CHAT_ID')
+    or ''
+)
 
 # Stripe / Billing settings
 STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', '')

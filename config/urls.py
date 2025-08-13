@@ -49,7 +49,6 @@ urlpatterns = [
     path('', include('apps.dyn_api.urls')),
     path('charts/', include('apps.charts.urls')),
     path("admin/", admin.site.urls),
-    path("", include('admin_black.urls')),
     path('analytics/', include('apps.analytics.urls')),
     path('comms/', include('apps.comms.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
