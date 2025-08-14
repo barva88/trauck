@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic import RedirectView
 from rest_framework.authtoken.views import obtain_auth_token # <-- NEW
 
 
@@ -27,6 +28,18 @@ urlpatterns = [
     path('accounts/', include('apps.accounts.urls')),
     # Allauth (web)
     path('accounts/', include('allauth.urls')),
+    # Compatibility: map admin_black demo names to allauth equivalents
+    path('auth/signin/', RedirectView.as_view(pattern_name='account_login', permanent=False), name='auth_signin'),
+    path('auth/signup/', RedirectView.as_view(pattern_name='account_signup', permanent=False), name='auth_signup'),
+    # Compatibility: legacy demo menu names -> home
+    path('icons/', RedirectView.as_view(pattern_name='pages:index', permanent=False), name='icons'),
+    path('map/', RedirectView.as_view(pattern_name='pages:index', permanent=False), name='map'),
+    path('notifications/', RedirectView.as_view(pattern_name='pages:index', permanent=False), name='notifications'),
+    path('user-profile/', RedirectView.as_view(pattern_name='pages:index', permanent=False), name='user_profile'),
+    path('tables/', RedirectView.as_view(pattern_name='pages:index', permanent=False), name='tables'),
+    path('typography/', RedirectView.as_view(pattern_name='pages:index', permanent=False), name='typography'),
+    path('rtl/', RedirectView.as_view(pattern_name='pages:index', permanent=False), name='rtl'),
+    path('upgrade/', RedirectView.as_view(pattern_name='pages:index', permanent=False), name='upgrade'),
     # dj-rest-auth (API)
     path('api/auth/', include('dj_rest_auth.urls')),
     path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
@@ -60,3 +73,12 @@ try:
     urlpatterns.append( path("login/jwt/", view=obtain_auth_token) )
 except:
     pass
+
+# Django Debug Toolbar routing (only when installed and DEBUG is True)
+if settings.DEBUG:
+    try:
+        import debug_toolbar  # type: ignore
+        urlpatterns = [path("__debug__/", include(debug_toolbar.urls))] + urlpatterns
+    except Exception:
+        # If debug toolbar isn't installed, ignore
+        pass

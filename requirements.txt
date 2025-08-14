@@ -1,6 +1,8 @@
 # Core
 django==4.2.9
 python-dotenv==1.0.1
+django-environ==0.11.2
+django-widget-tweaks==1.5.0
 str2bool==1.1
 stripe==10.4.0
 

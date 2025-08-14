@@ -1,4 +1,5 @@
 {% comment %} {% load static %} {% endcomment %}
+{# Deprecated: replaced by includes/menu-app.html to avoid route conflicts. #}
 {% load i18n static admin_black %}
 {% comment %} {% load i18n %} {% endcomment %}
 
@@ -82,18 +83,7 @@
     </a>
     <div class="collapse" id="pagesExamples">
       <ul class="nav">
-        <li>
-          <a href="{% url 'auth_signin' %}">
-            <span class="sidebar-mini-icon">L</span>
-            <span class="sidebar-normal"> Login </span>
-          </a>
-        </li>
-        <li>
-          <a href="{% url 'auth_signup' %}">
-            <span class="sidebar-mini-icon">R</span>
-            <span class="sidebar-normal"> Register </span>
-          </a>
-        </li>
+  {# Old admin_black demo links removed; use allauth names instead if needed: account_login/account_signup #}
       </ul>
     </div>
   </li>
