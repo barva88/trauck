@@ -22,6 +22,10 @@
 
 
 from django.shortcuts import render
+from django.http import JsonResponse, HttpResponse
+from django.views.decorators.http import require_GET
+from django.views.decorators.cache import cache_control
+from django.db import connection
 from config.menu_config import MENU_ITEMS
 from datetime import date
 
@@ -100,3 +104,23 @@ def index(request):
         "today": date.today(),
     }
     return render(request, "pages/dashboard.html", context)
+
+
+# Lightweight health and readiness probes
+@require_GET
+@cache_control(no_cache=True, no_store=True, must_revalidate=True)
+def healthz(request):
+    return JsonResponse({"status": "ok"})
+
+
+@require_GET
+@cache_control(no_cache=True, no_store=True, must_revalidate=True)
+def readiness(request):
+    # Ensure DB connectivity without running queries
+    try:
+        connection.ensure_connection()
+        db_ok = True
+    except Exception:
+        db_ok = False
+    status = 200 if db_ok else 503
+    return JsonResponse({"database": db_ok}, status=status)

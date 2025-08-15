@@ -1,3 +1,9 @@
+# Changelog
+
+## [Unreleased]
+- chore: tooling + CI + security hardening (pre-commit, pytest+cov, GitHub Actions)
+- feat: health endpoints (/healthz, /readiness)
+- feat: per-env settings (base/dev/prod/test)
 # Change Log
 
 ## [1.0.27] 2025-05-15

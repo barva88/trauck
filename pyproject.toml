@@ -1,0 +1,28 @@
+[tool.black]
+line-length = 100
+target-version = ["py311", "py310"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_output = 3
+include_trailing_comma = true
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+addopts = "-q --disable-warnings --maxfail=1 --cov=."
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["."]
+omit = [
+  "manage.py",
+  "config/asgi.py",
+  "config/wsgi.py",
+  "*/migrations/*",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true

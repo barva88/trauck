@@ -11,7 +11,11 @@ env = environ.Env(
 )
 
 # Load .env if present
-environ.Env.read_env(env_file=os.path.join(os.getcwd(), ".env"))
+try:
+    environ.Env.read_env(env_file=str(Path(__file__).resolve().parents[2] / ".env"))
+except Exception:
+    # Fallback to CWD if running ad-hoc scripts
+    environ.Env.read_env(env_file=os.path.join(os.getcwd(), ".env"))
 
 # Point to project root (one level above config/)
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -93,7 +97,6 @@ AUTHENTICATION_BACKENDS = (
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",

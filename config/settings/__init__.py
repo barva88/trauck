@@ -1,5 +1,6 @@
 """
-// Generated/updated by Copilot Hardening Task – 2025-08-13
-Settings package entrypoint. Use config.settings.dev/prod/test directly
-or the compatibility shim in config/settings.py.
+Settings package entrypoint.
+Default to development settings for local use.
 """
+
+from .dev import *  # noqa: F401,F403
