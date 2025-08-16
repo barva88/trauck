@@ -15,6 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from django.urls import reverse, NoReverseMatch
+from django.views.generic import TemplateView
 from allauth.account.views import email_verification_sent
 from django.views.generic import RedirectView
 from rest_framework.authtoken.views import obtain_auth_token # <-- NEW
@@ -76,6 +78,18 @@ try:
     urlpatterns.append( path("login/jwt/", view=obtain_auth_token) )
 except:
     pass
+
+# Ensure API verification-sent endpoint resolves a template (fallback only if missing)
+try:
+    reverse('account_email_verification_sent')
+except Exception:
+    urlpatterns.append(
+        path(
+            'api/auth/registration/account-email-verification-sent/',
+            TemplateView.as_view(template_name='account/verification_sent.html'),
+            name='account_email_verification_sent',
+        )
+    )
 
 # Django Debug Toolbar routing (only when installed and DEBUG is True)
 if settings.DEBUG:
