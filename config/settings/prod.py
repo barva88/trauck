@@ -54,19 +54,59 @@ SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = "DENY"
 
 # -----------------------------------------------------------------------------
-# Archivos estáticos (WhiteNoise) y Middleware
-# - Inserta WhiteNoise en producción para servir estáticos comprimidos con hash
-# - Mantiene STATICFILES_STORAGE y STORAGES para compatibilidad
+# Archivos estáticos y WhiteNoise (Django 4.2/5.x)
+# - Elimina STATICFILES_STORAGE (incompatible con STORAGES)
+# - Define STATIC_URL/ROOT y MEDIA_URL/ROOT con Path
+# - Asegura WhiteNoiseMiddleware justo después de SecurityMiddleware y sólo una vez
+# - Soporta S3 vía USE_S3; por defecto usa FileSystem + WhiteNoise en VPS
 # -----------------------------------------------------------------------------
-if "whitenoise.middleware.WhiteNoiseMiddleware" not in MIDDLEWARE:
-    MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-STORAGES = {
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
+# Asegura posición de WhiteNoise inmediatamente después de SecurityMiddleware (índice 1)
+if "whitenoise.middleware.WhiteNoiseMiddleware" in MIDDLEWARE:
+    MIDDLEWARE = [
+        mw for mw in MIDDLEWARE if mw != "whitenoise.middleware.WhiteNoiseMiddleware"
+    ]
+MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
+
+# Rutas de estáticos y media (salida de collectstatic y almacenamiento local)
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"  # salida de collectstatic
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+# Si no existe ya STATICFILES_DIRS y hay carpeta 'static', la agregamos
+try:
+    STATICFILES_DIRS  # type: ignore[name-defined]
+except NameError:
+    if (BASE_DIR / "static").exists():
+        STATICFILES_DIRS = [BASE_DIR / "static"]  # type: ignore[assignment]
+
+# Configuración estándar: usar STORAGES sin STATICFILES_STORAGE
+USE_S3 = bool(os.getenv("USE_S3", "").lower() in ("1", "true", "yes"))
+
+if USE_S3:
+    # Backend S3 si está activado por variables de entorno
+    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+    STORAGES = {
+        "default": {"BACKEND": DEFAULT_FILE_STORAGE},
+        "staticfiles": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        },
+    }
+else:
+    # VPS con WhiteNoise (recomendado)
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+            "LOCATION": str(MEDIA_ROOT),
+            "BASE_URL": MEDIA_URL,
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+            "LOCATION": str(STATIC_ROOT),
+            "BASE_URL": STATIC_URL,
+        },
+    }
 
 # -----------------------------------------------------------------------------
 # Base de datos: usa DATABASE_URL si está definido, si no, fallback a sqlite
