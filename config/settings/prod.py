@@ -67,6 +67,17 @@ _csrf_trusted = os.getenv(
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_trusted.split(",") if o.strip()]
 
 # -----------------------------------------------------------------------------
+# Email (production): SMTP via environment (Gmail or provider)
+# -----------------------------------------------------------------------------
+EMAIL_BACKEND = env("EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")  # noqa: F405
+EMAIL_HOST = env("EMAIL_HOST", default="smtp.gmail.com")  # noqa: F405
+EMAIL_PORT = env.int("EMAIL_PORT", default=587)  # noqa: F405
+EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)  # noqa: F405
+EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")  # noqa: F405
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")  # noqa: F405
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default=EMAIL_HOST_USER)  # noqa: F405
+
+# -----------------------------------------------------------------------------
 # Base de datos: usa DATABASE_URL si está definido, si no, fallback a sqlite
 # -----------------------------------------------------------------------------
 DATABASES = {

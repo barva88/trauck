@@ -1,0 +1,22 @@
+{% extends "account/base.html" %}
+{% load i18n %}
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="mb-0">{% trans "Confirm your email" %}</h4>
+        </div>
+        <div class="card-body">
+          <form method="post" action="{% url 'account_confirm_email' confirmation.key %}">
+            {% csrf_token %}
+            <p>{% blocktrans with email=confirmation.email_address.email %}Please confirm that <strong>{{ email }}</strong> is your email address.{% endblocktrans %}</p>
+            <button class="btn btn-primary" type="submit">{% trans "Confirm" %}</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

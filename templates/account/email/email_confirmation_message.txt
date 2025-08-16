@@ -1,0 +1,7 @@
+{% load i18n %}{% autoescape off %}
+{% blocktrans with site_name=current_site.name site_domain=current_site.domain %}You're receiving this email because user {{ user_email }} has given your email address to register an account on {{ site_domain }}.{% endblocktrans %}
+
+{% trans "To confirm this is correct, go to" %} {{ activate_url }}
+
+{% trans "Thank you for using" %} {{ site_domain }}
+{% endautoescape %}

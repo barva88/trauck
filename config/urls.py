@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from allauth.account.views import email_verification_sent
 from django.views.generic import RedirectView
 from rest_framework.authtoken.views import obtain_auth_token # <-- NEW
 
@@ -43,6 +44,8 @@ urlpatterns = [
     # dj-rest-auth (API)
     path('api/auth/', include('dj_rest_auth.urls')),
     path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
+    # Ensure the named view exists for verification sent pages
+    path('accounts/email-verification-sent/', email_verification_sent, name='account_email_verification_sent'),
 
     path('brokers/', include('apps.brokers.urls')),
     path('carriers/', include('apps.carriers.urls')),
