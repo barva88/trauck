@@ -61,6 +61,13 @@ X_FRAME_OPTIONS = "DENY"
 # - Soporta S3 vía USE_S3; por defecto usa FileSystem + WhiteNoise en VPS
 # -----------------------------------------------------------------------------
 
+# Defensa: si algún archivo heredado o variable de entorno definió STATICFILES_STORAGE,
+# elimínalo para evitar el choque con STORAGES (mutuamente exclusivos en Django>=4.2)
+try:  # pragma: no cover - protección en runtime
+    del STATICFILES_STORAGE  # type: ignore[name-defined]
+except Exception:
+    pass
+
 # Asegura posición de WhiteNoise inmediatamente después de SecurityMiddleware (índice 1)
 if "whitenoise.middleware.WhiteNoiseMiddleware" in MIDDLEWARE:
     MIDDLEWARE = [
