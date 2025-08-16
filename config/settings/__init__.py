@@ -1,6 +1,5 @@
-"""
-Settings package entrypoint.
-Default to development settings for local use.
-"""
-
-from .dev import *  # noqa: F401,F403
+# Intentionally empty.
+# Use explicit modules per environment, e.g.:
+# - config.settings.dev (local)
+# - config.settings.test (pytest)
+# - config.settings.prod (production)
