@@ -1,19 +1,23 @@
 from .base import *  # noqa
-import os
 
+# Dev settings inherit from base and keep things simple.
 DEBUG = True
-ALLOWED_HOSTS = ["*"]
-INTERNAL_IPS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
-# SQLite by default for local development
-DATABASES = {
-    "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}
+# Per-env storages: no WhiteNoise in development
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "LOCATION": str(MEDIA_ROOT),
+        "BASE_URL": MEDIA_URL,
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        "LOCATION": str(STATIC_ROOT),
+        "BASE_URL": STATIC_URL,
+    },
 }
 
-# Optional: Debug Toolbar if installed
-try:
-    import debug_toolbar  # noqa: F401
-    INSTALLED_APPS += ["debug_toolbar"]
-    MIDDLEWARE.insert(2, "debug_toolbar.middleware.DebugToolbarMiddleware")
-except Exception:
-    pass
+# Ensure WhiteNoise is not active in dev
+if "whitenoise.middleware.WhiteNoiseMiddleware" in MIDDLEWARE:
+    MIDDLEWARE.remove("whitenoise.middleware.WhiteNoiseMiddleware")
