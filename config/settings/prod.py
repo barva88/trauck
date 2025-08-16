@@ -30,6 +30,43 @@ if "whitenoise.middleware.WhiteNoiseMiddleware" not in MIDDLEWARE:
     MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
 
 # -----------------------------------------------------------------------------
+# Security & HTTPS hardening for production
+# -----------------------------------------------------------------------------
+# Respect reverse proxy SSL headers (Nginx/Gunicorn)
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+
+# Force HTTPS and enable strong HSTS
+SECURE_SSL_REDIRECT = True
+SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "31536000"))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# Secure cookies and sane SameSite defaults
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = os.getenv("SESSION_COOKIE_SAMESITE", "Lax")
+CSRF_COOKIE_SAMESITE = os.getenv("CSRF_COOKIE_SAMESITE", "Lax")
+
+# Optional cookie domains (cross-subdomain auth)
+SESSION_COOKIE_DOMAIN = os.getenv("SESSION_COOKIE_DOMAIN", ".trauck.com")
+CSRF_COOKIE_DOMAIN = os.getenv("CSRF_COOKIE_DOMAIN", ".trauck.com")
+
+# Additional secure headers via SecurityMiddleware
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = os.getenv("SECURE_REFERRER_POLICY", "strict-origin-when-cross-origin")
+X_FRAME_OPTIONS = os.getenv("X_FRAME_OPTIONS", "DENY")
+
+# CSRF trusted origins (comma-separated env var)
+_csrf_trusted = os.getenv(
+    "DJANGO_CSRF_TRUSTED_ORIGINS",
+    "https://trauck.com,https://www.trauck.com,https://dashboard.trauck.com",
+)
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_trusted.split(",") if o.strip()]
+
+# -----------------------------------------------------------------------------
 # Base de datos: usa DATABASE_URL si está definido, si no, fallback a sqlite
 # -----------------------------------------------------------------------------
 DATABASES = {
