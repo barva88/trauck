@@ -1,4 +1,6 @@
 from django.views.generic import TemplateView
+from django.shortcuts import redirect
+from django_hosts.resolvers import reverse
 from .models import (
     SiteSettings, HeroBlock, Feature, PricingPlan, Testimonial, FAQ, PartnerLogo, SEOPage, CTASection, MediaBlock
 )
@@ -6,6 +8,16 @@ from .models import (
 
 class HomeView(TemplateView):
     template_name = "public/home.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            # Send logged-in users to dashboard host
+            try:
+                url = reverse('pages:index', host='dashboard')
+            except Exception:
+                url = reverse('root', host='dashboard') if hasattr(self, 'host') else '/'
+            return redirect(url)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)

@@ -23,7 +23,8 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         input: [
           path.resolve(__dirname, "static/assets/scss/custom.scss"),
-          path.resolve(__dirname, "static/assets/css/public.css"),
+          // Tailwind source lives under assets/tw to avoid overwriting built CSS
+          path.resolve(__dirname, "static/assets/tw/public.css"),
         ],
         output: {
           assetFileNames: (assetInfo) => {

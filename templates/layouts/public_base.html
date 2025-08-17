@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-VWZQm4r1q7Yj7kqz6Tzv+6bQh7yqE9j2wR0r1J7U3v8yXJ1p4Y3m0g9x3mQZ5xkz5/0cH3kQw6d3mPp6Z9YQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="{% static 'assets/css/public.css' %}" />
   <title>{% block title %}Trauck{% endblock %}</title>
   {% block extra_head %}{% endblock %}
@@ -22,8 +23,9 @@
           <a href="#features" class="hover:text-white">Características</a>
           <a href="#pricing" class="hover:text-white">Precios</a>
           <a href="#faq" class="hover:text-white">FAQ</a>
-          <a href="{% url 'account_login' %}" class="hover:text-white">Ingresar</a>
-          <a href="{% url 'account_signup' %}" class="px-3 py-1.5 rounded-md bg-primary text-white hover:opacity-90">Crear cuenta</a>
+          {% load hosts %}
+          <a href="{% url 'account_login' host 'dashboard' %}" class="hover:text-white">Ingresar</a>
+          <a href="{% url 'account_signup' host 'dashboard' %}" class="px-3 py-1.5 rounded-md bg-primary text-white hover:opacity-90">Crear cuenta</a>
         </nav>
       </div>
     </div>

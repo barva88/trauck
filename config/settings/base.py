@@ -36,6 +36,7 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 INSTALLED_APPS = [
+    "django_hosts",
     "jazzmin",
     "admin_black",
     "django.contrib.admin",
@@ -97,6 +98,7 @@ AUTHENTICATION_BACKENDS = (
 )
 
 MIDDLEWARE = [
+    "django_hosts.middleware.HostsRequestMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -105,9 +107,15 @@ MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_hosts.middleware.HostsResponseMiddleware",
+    "apps.core.middleware.RequireLoginOnDashboardHost",
 ]
 
-ROOT_URLCONF = "config.urls"
+ROOT_URLCONF = "config.urls_dashboard"  # default for dashboard host
+ROOT_HOSTCONF = "config.hosts"
+DEFAULT_HOST = env("DEFAULT_HOST", default="dashboard")
+PARENT_HOST = env("PARENT_HOST", default="trauck.com")
+HOST_SCHEME = env("HOST_SCHEME", default="https://")
 
 HOME_TEMPLATES = os.path.join(BASE_DIR, "templates")
 
@@ -221,8 +229,11 @@ ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = True
 ACCOUNT_USER_MODEL_EMAIL_FIELD = "email"
 ACCOUNT_ADAPTER = "apps.accounts.adapters.AccountAdapter"
 ACCOUNT_FORMS = {"signup": "apps.accounts.forms.CustomSignupForm"}
-LOGIN_REDIRECT_URL = "/"
+LOGIN_REDIRECT_URL = "/"  # within dashboard host
 LOGOUT_REDIRECT_URL = "/"
+
+# Host-aware URLs for allauth/dj-rest-auth (used by emails or external redirects)
+ACCOUNT_ADAPTER = "apps.accounts.adapters.AccountAdapter"
 
 RETELL_WEBHOOK_SECRET = env("RETELL_WEBHOOK_SECRET", default="changeme")
 RETELL_ALLOWED_AGENT_IDS = env("RETELL_ALLOWED_AGENT_IDS", default="")

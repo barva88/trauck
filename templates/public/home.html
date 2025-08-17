@@ -45,20 +45,29 @@
         <h2 class="mt-2 text-3xl font-bold">Aprueba tu CDL más rápido con IA</h2>
         <p class="mt-2 text-white/70">Práctica por voz/chat, simulacros de 20 preguntas y analíticas claras.</p>
       </div>
-      <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {% for f in features %}
-          <div class="glass rounded-lg p-5">
-            {% if f.icon_class %}<i class="{{ f.icon_class }} text-2xl mb-2"></i>{% endif %}
-            <h3 class="font-semibold">{{ f.title }}</h3>
-            <p class="text-white/70">{{ f.subtitle }}</p>
+          <div class="glass rounded-lg p-6">
+            {% if f.icon_class %}<i class="{{ f.icon_class }} text-2xl mb-2 text-primary"></i>{% endif %}
+            <h3 class="font-semibold text-lg">{{ f.title }}</h3>
+            <p class="mt-1 text-white/80">{{ f.subtitle }}</p>
           </div>
         {% empty %}
-          {% for d in "123456" %}
-            <div class="glass rounded-lg p-5">
-              <h3 class="font-semibold">Asistente por llamada</h3>
-              <p class="text-white/70">Atiende por web call o WhatsApp. Guiones en español/inglés y reconocimiento de voz.</p>
-            </div>
-          {% endfor %}
+          <div class="glass rounded-lg p-6">
+            <i class="fa-solid fa-headset text-2xl mb-2 text-primary"></i>
+            <h3 class="font-semibold text-lg">Asistente por llamada</h3>
+            <p class="mt-1 text-white/80">Atiende por web call o WhatsApp. Guiones en español/inglés y reconocimiento de voz.</p>
+          </div>
+          <div class="glass rounded-lg p-6">
+            <i class="fa-solid fa-robot text-2xl mb-2 text-primary"></i>
+            <h3 class="font-semibold text-lg">Simulacros inteligentes</h3>
+            <p class="mt-1 text-white/80">Exámenes de 20 preguntas con retroalimentación inmediata y explicación de respuestas.</p>
+          </div>
+          <div class="glass rounded-lg p-6">
+            <i class="fa-solid fa-chart-line text-2xl mb-2 text-primary"></i>
+            <h3 class="font-semibold text-lg">Analíticas de progreso</h3>
+            <p class="mt-1 text-white/80">Panel con métricas por tema y recomendaciones personalizadas.</p>
+          </div>
         {% endfor %}
       </div>
     </div>
@@ -72,19 +81,29 @@
         <h2 class="mt-2 text-3xl font-bold">Del registro a tu certificado</h2>
         <p class="mt-2 text-white/70">Crea cuenta, elige plan, practica con IA y aprueba.</p>
       </div>
-      <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {% for b in blocks %}
-          <div class="glass rounded-lg p-5">
+          <div class="glass rounded-lg p-6">
             <p class="font-semibold">{{ b.title|default:"Paso" }}</p>
-            <p class="text-white/70">{{ b.text|default:"Guía con IA y seguimiento de progreso." }}</p>
+            <p class="mt-1 text-white/80">{{ b.text|default:"Guía con IA y seguimiento de progreso." }}</p>
           </div>
         {% empty %}
-          {% for i in "1234" %}
-            <div class="glass rounded-lg p-5">
-              <p class="font-semibold">Habla con el asistente</p>
-              <p class="text-white/70">Driver llama o escribe por WhatsApp. La IA guía el estudio.</p>
-            </div>
-          {% endfor %}
+          <div class="glass rounded-lg p-6">
+            <p class="font-semibold">Regístrate</p>
+            <p class="mt-1 text-white/80">Crea tu cuenta en minutos.</p>
+          </div>
+          <div class="glass rounded-lg p-6">
+            <p class="font-semibold">Elige plan</p>
+            <p class="mt-1 text-white/80">Empieza mensual o ahorra con anual.</p>
+          </div>
+          <div class="glass rounded-lg p-6">
+            <p class="font-semibold">Practica con IA</p>
+            <p class="mt-1 text-white/80">Voz o chat, en español o inglés.</p>
+          </div>
+          <div class="glass rounded-lg p-6">
+            <p class="font-semibold">Aprueba tu CDL</p>
+            <p class="mt-1 text-white/80">Llega seguro al examen.</p>
+          </div>
         {% endfor %}
       </div>
     </div>
