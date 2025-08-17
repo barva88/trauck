@@ -1,78 +1,183 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/public_base.html" %}
 {% load static %}
 {% block content %}
-<div class="container py-5">
-  <section id="hero" class="text-center my-5">
-    <h1 class="display-5 fw-bold">{{ site_settings.hero_title|default:"Prepárate para tu CDL con Trauck" }}</h1>
-    <p class="lead">{{ site_settings.hero_subtitle|default:"Simulacros, analítica y asistencia por IA" }}</p>
-    <div class="mt-3">
-      <a class="btn btn-primary btn-lg" href="{{ site_settings.primary_cta_url|default:'/auth/signup/' }}">{{ site_settings.primary_cta_text|default:"Comienza tu preparación CDL" }}</a>
-      <a class="btn btn-outline-secondary ms-2" href="#features">{{ site_settings.secondary_cta_text|default:"Saber más" }}</a>
-    </div>
-  </section>
-
-  <section id="features" class="my-5">
-    <div class="row">
-      {% for f in features %}
-      <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body">
-            {% if f.icon_class %}<i class="{{ f.icon_class }} fs-2 mb-3"></i>{% endif %}
-            <h5 class="card-title">{{ f.title }}</h5>
-            <p class="card-text text-muted">{{ f.subtitle }}</p>
+  <!-- Hero -->
+  <section class="relative isolate overflow-hidden bg-hero-gradient">
+    <div class="absolute inset-0 bg-black/30"></div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+        <div>
+          <h1 class="text-4xl sm:text-5xl font-bold leading-tight">
+            {{ site_settings.hero_title|default:"Entrena y aprueba tu CDL con IA" }}
+          </h1>
+          <p class="mt-4 text-white/90 text-lg">
+            {{ site_settings.hero_subtitle|default:"Simulacros conversacionales, analítica de progreso y asistencia por voz/WhatsApp." }}
+          </p>
+          <div class="mt-8 flex flex-col sm:flex-row gap-3">
+            <a href="{{ site_settings.primary_cta_url|default:'/accounts/signup/' }}" class="inline-flex items-center justify-center px-6 py-3 rounded-md bg-primary text-white font-semibold hover:opacity-90">
+              {{ site_settings.primary_cta_text|default:"Comienza tu preparación CDL" }}
+            </a>
+            <a href="#features" class="inline-flex items-center justify-center px-6 py-3 rounded-md ring-1 ring-white/20 hover:bg-white/5">
+              {{ site_settings.secondary_cta_text|default:"Saber más" }}
+            </a>
+          </div>
+          <div class="mt-4 text-sm text-white/80">
+            <a class="mr-4 underline hover:text-white" href="{% url 'account_login' %}">Ingresar</a>
+            <a class="underline hover:text-white" href="{% url 'account_signup' %}">Crear cuenta</a>
           </div>
         </div>
+        <div class="relative">
+          {% if hero and hero.image %}
+            <img src="{{ hero.image.url }}" alt="Hero" class="w-full rounded-xl shadow-soft" />
+          {% else %}
+            <img src="https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?q=80&w=1200" alt="Truck" class="w-full rounded-xl shadow-soft" />
+          {% endif %}
+        </div>
       </div>
-      {% empty %}
-      <div class="col-12 text-muted">Próximamente: simulacros CDL, analítica de progreso, y soporte por IA.</div>
-      {% endfor %}
     </div>
   </section>
 
-  <section id="pricing" class="my-5">
-    <h3 class="mb-4">Planes</h3>
-    <div class="row">
-      {% for p in plans %}
-      <div class="col-md-4 mb-4">
-        <div class="card h-100 {% if p.is_featured %}border-primary{% endif %}">
-          <div class="card-body">
-            <h5 class="card-title">{{ p.name }}</h5>
-            <p class="display-6">${{ p.price_month }}<small class="text-muted">/mes</small></p>
-            <ul class="small">
-              {% for item in p.features %}<li>{{ item }}</li>{% endfor %}
+  <!-- Features -->
+  <section id="features" class="bg-surface">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div class="text-center">
+        <p class="uppercase tracking-wide text-warning font-semibold">Por qué Trauck</p>
+        <h2 class="mt-2 text-3xl font-bold">Aprueba tu CDL más rápido con IA</h2>
+        <p class="mt-2 text-white/70">Práctica por voz/chat, simulacros de 20 preguntas y analíticas claras.</p>
+      </div>
+      <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {% for f in features %}
+          <div class="glass rounded-lg p-5">
+            {% if f.icon_class %}<i class="{{ f.icon_class }} text-2xl mb-2"></i>{% endif %}
+            <h3 class="font-semibold">{{ f.title }}</h3>
+            <p class="text-white/70">{{ f.subtitle }}</p>
+          </div>
+        {% empty %}
+          {% for d in "123456" %}
+            <div class="glass rounded-lg p-5">
+              <h3 class="font-semibold">Asistente por llamada</h3>
+              <p class="text-white/70">Atiende por web call o WhatsApp. Guiones en español/inglés y reconocimiento de voz.</p>
+            </div>
+          {% endfor %}
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="como-funciona" class="bg-surface">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div class="text-center">
+        <p class="uppercase tracking-wide text-warning font-semibold">Cómo funciona</p>
+        <h2 class="mt-2 text-3xl font-bold">Del registro a tu certificado</h2>
+        <p class="mt-2 text-white/70">Crea cuenta, elige plan, practica con IA y aprueba.</p>
+      </div>
+      <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {% for b in blocks %}
+          <div class="glass rounded-lg p-5">
+            <p class="font-semibold">{{ b.title|default:"Paso" }}</p>
+            <p class="text-white/70">{{ b.text|default:"Guía con IA y seguimiento de progreso." }}</p>
+          </div>
+        {% empty %}
+          {% for i in "1234" %}
+            <div class="glass rounded-lg p-5">
+              <p class="font-semibold">Habla con el asistente</p>
+              <p class="text-white/70">Driver llama o escribe por WhatsApp. La IA guía el estudio.</p>
+            </div>
+          {% endfor %}
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing" class="bg-surface">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div class="text-center">
+        <p class="uppercase tracking-wide text-warning font-semibold">Planes y precios</p>
+        <h2 class="mt-2 text-3xl font-bold">Flexible y escalable</h2>
+        <p class="mt-2 text-white/70">Ahorra con anual. Membresías por créditos.</p>
+        <div class="mt-3 flex items-center justify-center gap-3 text-sm">
+          <span class="opacity-75">Mensual</span>
+          <label class="inline-flex items-center cursor-pointer">
+            <input id="priceToggle" type="checkbox" class="sr-only peer" />
+            <div class="w-11 h-6 bg-white/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-primary after:content-[''] after:absolute after:ml-[-1.25rem] after:mt-[-0.25rem] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+          </label>
+          <span class="font-semibold">Anual (-20%)</span>
+        </div>
+      </div>
+      <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {% for p in plans %}
+          <div class="glass rounded-lg p-6 {% if p.is_featured %}ring-featured{% endif %}">
+            <div class="text-white/70 text-sm">{{ p.description|default:p.badge }}</div>
+            <h3 class="mt-1 text-xl font-bold">{{ p.name }}</h3>
+            <div class="mt-2 flex items-end gap-2">
+              <div class="text-4xl font-bold">
+                <span class="price-month">${{ p.price_month|default:0 }}</span>
+                <span class="price-annual hidden">${{ p.price_annual|default:0 }}</span>
+              </div>
+              <span class="text-white/70">/mes</span>
+            </div>
+            <ul class="mt-4 text-sm space-y-1 text-white/80">
+              {% for it in p.features %}
+                <li>✓ {{ it }}</li>
+              {% empty %}
+                <li>✓ Simulacros: 20 preguntas</li>
+                <li>✓ Práctica por voz y chat</li>
+                <li>✓ Analíticas de progreso</li>
+              {% endfor %}
             </ul>
-            <a class="btn btn-primary w-100" href="{{ p.cta_url }}">{{ p.cta_text }}</a>
+            <a class="mt-4 inline-flex w-full items-center justify-center px-4 py-2 rounded-md bg-primary hover:opacity-90" href="{{ p.cta_url|default:'/accounts/signup/' }}">{{ p.cta_text|default:"Elegir" }}</a>
           </div>
-        </div>
+        {% empty %}
+          <div class="text-white/70">Planes disponibles pronto.</div>
+        {% endfor %}
       </div>
-      {% empty %}
-      <div class="col-12 text-muted">Planes disponibles pronto.</div>
-      {% endfor %}
     </div>
   </section>
 
-  <section id="faq" class="my-5">
-    <h3 class="mb-4">Preguntas frecuentes</h3>
-    <div class="accordion" id="faqAccordion">
-      {% for q in faqs %}
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="h{{ forloop.counter }}">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c{{ forloop.counter }}">{{ q.question }}</button>
-        </h2>
-        <div id="c{{ forloop.counter }}" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-          <div class="accordion-body">{{ q.answer }}</div>
-        </div>
+  <!-- FAQ -->
+  <section id="faq" class="bg-surface">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div class="text-center">
+        <p class="uppercase tracking-wide text-warning font-semibold">FAQ</p>
+        <h2 class="mt-2 text-3xl font-bold">Todo claro desde el día uno</h2>
       </div>
-      {% empty %}
-      <div class="text-muted">Añadiremos respuestas a las preguntas más comunes.</div>
-      {% endfor %}
+      <div class="mt-8 space-y-3">
+        {% for q in faqs %}
+          <details class="glass rounded-lg p-4">
+            <summary class="cursor-pointer font-semibold">{{ q.question }}</summary>
+            <p class="mt-2 text-white/70">{{ q.answer }}</p>
+          </details>
+        {% empty %}
+          <p class="text-white/70">Añadiremos respuestas a las preguntas más comunes.</p>
+        {% endfor %}
+      </div>
     </div>
   </section>
 
-  <section id="cta" class="my-5 text-center">
-    <h3>{{ cta.title|default:"¿Listo para empezar?" }}</h3>
-    <p class="text-muted">{{ cta.subtitle|default:"Da el primer paso hacia tu CDL con Trauck." }}</p>
-    <a class="btn btn-primary" href="{{ cta.cta_url|default:'/auth/signup/' }}">{{ cta.cta_text|default:"Crear cuenta" }}</a>
+  <!-- CTA -->
+  <section id="cta" class="bg-surface">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+      <h3 class="text-3xl font-bold">{{ cta.title|default:"¿Listo para empezar?" }}</h3>
+      <p class="mt-2 text-white/70">{{ cta.subtitle|default:"Crea tu cuenta en minutos y activa tu plan." }}</p>
+      <div class="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+        <a class="px-6 py-3 rounded-md bg-primary text-white hover:opacity-90" href="{{ cta.cta_url|default:'/accounts/signup/' }}">{{ cta.cta_text|default:"Crear cuenta" }}</a>
+        <a class="px-6 py-3 rounded-md ring-1 ring-white/20 hover:bg-white/5" href="{% url 'account_login' %}">Ingresar</a>
+      </div>
+    </div>
   </section>
-</div>
+
+  <script>
+    (function(){
+      var toggle = document.getElementById('priceToggle');
+      if (!toggle) return;
+      function update(){
+        document.querySelectorAll('.price-month').forEach(function(el){ el.classList.toggle('hidden', toggle.checked); });
+        document.querySelectorAll('.price-annual').forEach(function(el){ el.classList.toggle('hidden', !toggle.checked); });
+      }
+      toggle.addEventListener('change', update);
+      update();
+    })();
+  </script>
 {% endblock %}
