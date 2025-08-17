@@ -27,6 +27,9 @@ from django.conf.urls.static import static
 
 
 urlpatterns = [
+    # Public landing (default root for now; will be host-mapped later)
+    path('', include('apps.public.urls')),
+    # Dashboard/pages
     path('', include('apps.pages.urls')),
     path('accounts/', include('apps.accounts.urls')),
     # Allauth (web)

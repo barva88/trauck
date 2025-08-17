@@ -1,0 +1,78 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% block content %}
+<div class="container py-5">
+  <section id="hero" class="text-center my-5">
+    <h1 class="display-5 fw-bold">{{ site_settings.hero_title|default:"Prepárate para tu CDL con Trauck" }}</h1>
+    <p class="lead">{{ site_settings.hero_subtitle|default:"Simulacros, analítica y asistencia por IA" }}</p>
+    <div class="mt-3">
+      <a class="btn btn-primary btn-lg" href="{{ site_settings.primary_cta_url|default:'/auth/signup/' }}">{{ site_settings.primary_cta_text|default:"Comienza tu preparación CDL" }}</a>
+      <a class="btn btn-outline-secondary ms-2" href="#features">{{ site_settings.secondary_cta_text|default:"Saber más" }}</a>
+    </div>
+  </section>
+
+  <section id="features" class="my-5">
+    <div class="row">
+      {% for f in features %}
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            {% if f.icon_class %}<i class="{{ f.icon_class }} fs-2 mb-3"></i>{% endif %}
+            <h5 class="card-title">{{ f.title }}</h5>
+            <p class="card-text text-muted">{{ f.subtitle }}</p>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-muted">Próximamente: simulacros CDL, analítica de progreso, y soporte por IA.</div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section id="pricing" class="my-5">
+    <h3 class="mb-4">Planes</h3>
+    <div class="row">
+      {% for p in plans %}
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 {% if p.is_featured %}border-primary{% endif %}">
+          <div class="card-body">
+            <h5 class="card-title">{{ p.name }}</h5>
+            <p class="display-6">${{ p.price_month }}<small class="text-muted">/mes</small></p>
+            <ul class="small">
+              {% for item in p.features %}<li>{{ item }}</li>{% endfor %}
+            </ul>
+            <a class="btn btn-primary w-100" href="{{ p.cta_url }}">{{ p.cta_text }}</a>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-muted">Planes disponibles pronto.</div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section id="faq" class="my-5">
+    <h3 class="mb-4">Preguntas frecuentes</h3>
+    <div class="accordion" id="faqAccordion">
+      {% for q in faqs %}
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="h{{ forloop.counter }}">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c{{ forloop.counter }}">{{ q.question }}</button>
+        </h2>
+        <div id="c{{ forloop.counter }}" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">{{ q.answer }}</div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="text-muted">Añadiremos respuestas a las preguntas más comunes.</div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section id="cta" class="my-5 text-center">
+    <h3>{{ cta.title|default:"¿Listo para empezar?" }}</h3>
+    <p class="text-muted">{{ cta.subtitle|default:"Da el primer paso hacia tu CDL con Trauck." }}</p>
+    <a class="btn btn-primary" href="{{ cta.cta_url|default:'/auth/signup/' }}">{{ cta.cta_text|default:"Crear cuenta" }}</a>
+  </section>
+</div>
+{% endblock %}

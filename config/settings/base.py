@@ -85,6 +85,7 @@ INSTALLED_APPS = [
     "apps.billing",
     "apps.analytics",
     "apps.comms",
+    "apps.public",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
