@@ -195,6 +195,11 @@ WHITENOISE_USE_FINDERS = True
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_REDIRECT_URL = "/"
+# Force a host-aware LOGIN_URL so any redirection to login uses the dashboard host
+if PARENT_HOST:
+    LOGIN_URL = f"{HOST_SCHEME}dashboard.{PARENT_HOST}/accounts/login/"
+else:
+    LOGIN_URL = "/accounts/login/"
 EMAIL_BACKEND = env("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="no-reply@example.com")
 

@@ -10,7 +10,19 @@ class RequireLoginOnDashboardHost(MiddlewareMixin):
         dashboard_host = f"dashboard.{getattr(settings, 'PARENT_HOST', '')}" if getattr(settings, 'PARENT_HOST', None) else None
         if dashboard_host and host == dashboard_host:
             if request.user.is_anonymous:
-                # Avoid loops: if already on login URL, do nothing
+                # Allow anonymous access to auth-related endpoints on dashboard host
+                allowed_prefixes = (
+                    '/accounts/login',
+                    '/accounts/signup',
+                    '/accounts/confirm-email',
+                    '/accounts/password',  # reset/change
+                    '/api/auth/',          # dj-rest-auth
+                    '/admin/',             # let admin handle its own perms
+                )
+                for p in allowed_prefixes:
+                    if request.path.startswith(p):
+                        return None
+                # Otherwise redirect to dashboard login URL
                 try:
                     login_url = reverse('account_login', host='dashboard')
                 except Exception:
