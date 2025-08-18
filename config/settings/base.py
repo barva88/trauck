@@ -4,24 +4,26 @@ Base settings shared across environments.
 from pathlib import Path
 import os
 import environ
+import dj_database_url
+
 
 
 env = environ.Env(
     DEBUG=(bool, False),
 )
 
-# Load .env if present
-try:
-    environ.Env.read_env(env_file=str(Path(__file__).resolve().parents[2] / ".env"))
-except Exception:
-    # Fallback to CWD if running ad-hoc scripts
-    environ.Env.read_env(env_file=os.path.join(os.getcwd(), ".env"))
-
-# Point to project root (one level above config/)
+# Project root
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
+# Load .env early using python-dotenv
+try:
+    from dotenv import load_dotenv
+    load_dotenv(BASE_DIR / ".env")
+except Exception:
+    pass
+
 SECRET_KEY = env("SECRET_KEY", default="Super_Secr3t_9999")
-DEBUG = env.bool("DEBUG", default=False)
+DEBUG = env.bool("DJANGO_DEBUG", default=env.bool("DEBUG", default=False))
 
 ALLOWED_HOSTS = ["*"]
 RENDER_EXTERNAL_HOSTNAME = env("RENDER_EXTERNAL_HOSTNAME", default=None)
@@ -141,32 +143,14 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 
-# Database
-DB_ENGINE = env("DB_ENGINE", default=None)
-DB_USERNAME = env("DB_USERNAME", default=None)
-DB_PASS = env("DB_PASS", default=None)
-DB_HOST = env("DB_HOST", default=None)
-DB_PORT = env("DB_PORT", default=None)
-DB_NAME = env("DB_NAME", default=None)
-
-if DB_ENGINE and DB_NAME and DB_USERNAME:
-    DATABASES = {
-        "default": {
-            "ENGINE": f"django.db.backends.{DB_ENGINE}",
-            "NAME": DB_NAME,
-            "USER": DB_USERNAME,
-            "PASSWORD": DB_PASS,
-            "HOST": DB_HOST,
-            "PORT": DB_PORT,
-        }
-    }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
-        }
-    }
+# Database via dj-database-url, defaulting to local sqlite if not provided
+DATABASES = {
+    "default": dj_database_url.parse(
+        os.getenv("DATABASE_URL", f"sqlite:///{os.path.join(BASE_DIR, 'db.sqlite3')}"),
+        conn_max_age=600,
+        ssl_require=False,
+    )
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},

@@ -112,3 +112,28 @@
 
 ---
 [Django Black Dashboard](https://app-generator.dev/product/black-dashboard/django/) - Open-Source **Django** Starter provided by [App Generator](https://app-generator.dev).
+
+
+## Local setup (.env and database)
+
+1) Create a `.env` from `env.example` and edit values:
+
+```bash
+cp env.example .env
+# edit .env and set SECRET_KEY and DATABASE_URL
+```
+
+2) Install dependencies and run basic checks/migrations:
+
+```bash
+python manage.py check
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
+```
+
+3) Optional: verify database connectivity
+
+```bash
+python manage.py health_db
+```
