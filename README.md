@@ -167,3 +167,28 @@ Then reload and restart:
 sudo systemctl daemon-reload
 sudo systemctl restart trauck
 ```
+
+## Base de datos (Supabase)
+
+```bash
+cp .env.example .env
+# Rellenar:
+# - SUPABASE_DB_PASSWORD
+# - SUPABASE_POOLER_HOST (desde Supabase → Connection strings → Pooler)
+# Opcional: definir DATABASE_URL directamente y omitir el resto.
+
+# Primera vez:
+python -m venv .venv && . .venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py collectstatic --noinput
+```
+
+Verificación rápida de conectividad con psql:
+
+```bash
+PGPASSWORD="$SUPABASE_DB_PASSWORD" psql \
+  -h $SUPABASE_POOLER_HOST -p ${SUPABASE_POOLER_PORT:-6543} \
+  -U ${SUPABASE_DB_USER:-postgres} -d ${SUPABASE_DB_NAME:-postgres} \
+  "sslmode=require" -c "select now();"
+```

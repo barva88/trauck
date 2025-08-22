@@ -5,6 +5,7 @@ from pathlib import Path
 import os
 import environ
 import dj_database_url
+import urllib.parse
 
 
 
@@ -143,30 +144,45 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 
-# Database via dj-database-url with Supabase-aware fallback and SSL required
-# If DATABASE_URL is not present, build it from SUPABASE_DB_* variables (without hardcoding passwords)
-SUPABASE_HOST = os.getenv("SUPABASE_DB_HOST", "db.fcolgapfysnujdfonyqj.supabase.co")
-SUPABASE_PORT = os.getenv("SUPABASE_DB_PORT", "5432")
-SUPABASE_USER = os.getenv("SUPABASE_DB_USER", "postgres")
-SUPABASE_PASS = os.getenv("SUPABASE_DB_PASSWORD")  # no hardcode
-SUPABASE_NAME = os.getenv("SUPABASE_DB_NAME", "postgres")
-SUPABASE_SSLMODE = os.getenv("SUPABASE_SSLMODE", "require")
+# -----------------------------------------------------------------------------
+# Database (Supabase)
+# Priority to DATABASE_URL; otherwise build from SUPABASE_* variables.
+# Default: use Pooler (port 6543), require SSL, and enable connection pooling.
+# -----------------------------------------------------------------------------
 
-_fallback_url = (
-    f"postgresql://{SUPABASE_USER}:{SUPABASE_PASS}"
-    f"@{SUPABASE_HOST}:{SUPABASE_PORT}/{SUPABASE_NAME}"
-    f"?sslmode={SUPABASE_SSLMODE}"
-) if SUPABASE_PASS else None
+def _bool(v: str, default: bool = False) -> bool:
+    if v is None:
+        return default
+    return v.strip().lower() in {"1", "true", "yes", "y", "on"}
 
-DATABASE_URL = os.getenv("DATABASE_URL", _fallback_url)
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL o SUPABASE_DB_PASSWORD no están definidos")
+    use_pooler = _bool(os.getenv("SUPABASE_USE_POOLER", "true"), default=True)
+    user = os.getenv("SUPABASE_DB_USER", "postgres")
+    pwd = os.getenv("SUPABASE_DB_PASSWORD", "")
+    dbname = os.getenv("SUPABASE_DB_NAME", "postgres")
+    sslm = os.getenv("DB_SSLMODE", "require")
+
+    if use_pooler:
+        host = os.getenv("SUPABASE_POOLER_HOST", "")
+        port = os.getenv("SUPABASE_POOLER_PORT", "6543")
+    else:
+        host = os.getenv("SUPABASE_DIRECT_HOST", "")
+        port = os.getenv("SUPABASE_DIRECT_PORT", "5432")
+
+    if not (host and pwd):
+        raise RuntimeError(
+            "Faltan variables de DB: define DATABASE_URL o SUPABASE_DB_PASSWORD y el host correspondiente."
+        )
+
+    enc_pwd = urllib.parse.quote_plus(pwd)
+    DATABASE_URL = f"postgresql://{user}:{enc_pwd}@{host}:{port}/{dbname}?sslmode={sslm}"
 
 DATABASES = {
     "default": dj_database_url.parse(
         DATABASE_URL,
-        conn_max_age=600,  # pooling
+        conn_max_age=int(os.getenv("DB_CONN_MAX_AGE", "600")),
         ssl_require=True,
     )
 }

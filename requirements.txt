@@ -5,9 +5,9 @@ django-environ==0.11.2
 django-widget-tweaks==1.5.0
 str2bool==1.1
 stripe==10.4.0
-
+ dj-database-url==2.*
 django-allauth==0.63.6
-dj-rest-auth==6.0.0
+psycopg2-binary==2.*
 djangorestframework-simplejwt==5.3.1
 phonenumbers==8.13.42
 django-hosts==6.0
@@ -23,10 +23,10 @@ requests==2.32.3
 pandas==2.2.3
 graphviz==0.20.3
 astor==0.8.1 
-dj-database-url==2.*
+# dj-database-url listed above
 django-cors-headers==4.4.0
 sentry-sdk>=2.2
-psycopg2-binary==2.*
+# psycopg2-binary listed above
 
 # AI
 anthropic==0.34.2
