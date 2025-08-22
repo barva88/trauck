@@ -143,12 +143,31 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 
-# Database via dj-database-url, defaulting to local sqlite if not provided
+# Database via dj-database-url with Supabase-aware fallback and SSL required
+# If DATABASE_URL is not present, build it from SUPABASE_DB_* variables (without hardcoding passwords)
+SUPABASE_HOST = os.getenv("SUPABASE_DB_HOST", "db.fcolgapfysnujdfonyqj.supabase.co")
+SUPABASE_PORT = os.getenv("SUPABASE_DB_PORT", "5432")
+SUPABASE_USER = os.getenv("SUPABASE_DB_USER", "postgres")
+SUPABASE_PASS = os.getenv("SUPABASE_DB_PASSWORD")  # no hardcode
+SUPABASE_NAME = os.getenv("SUPABASE_DB_NAME", "postgres")
+SUPABASE_SSLMODE = os.getenv("SUPABASE_SSLMODE", "require")
+
+_fallback_url = (
+    f"postgresql://{SUPABASE_USER}:{SUPABASE_PASS}"
+    f"@{SUPABASE_HOST}:{SUPABASE_PORT}/{SUPABASE_NAME}"
+    f"?sslmode={SUPABASE_SSLMODE}"
+) if SUPABASE_PASS else None
+
+DATABASE_URL = os.getenv("DATABASE_URL", _fallback_url)
+
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL o SUPABASE_DB_PASSWORD no están definidos")
+
 DATABASES = {
     "default": dj_database_url.parse(
-        os.getenv("DATABASE_URL", f"sqlite:///{os.path.join(BASE_DIR, 'db.sqlite3')}"),
-        conn_max_age=600,
-        ssl_require=False,
+        DATABASE_URL,
+        conn_max_age=600,  # pooling
+        ssl_require=True,
     )
 }
 

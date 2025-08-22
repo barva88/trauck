@@ -137,3 +137,33 @@ python manage.py runserver
 ```bash
 python manage.py health_db
 ```
+
+### Makefile helpers (optional)
+
+```bash
+cp .env.example .env  # set SUPABASE_DB_PASSWORD
+make install
+make migrate
+make collect
+```
+
+Note: Supabase requires `sslmode=require` in the connection string. This project enforces SSL for DATABASE_URL and the Supabase fallback.
+
+### Gunicorn/systemd
+
+Ensure your systemd unit loads the environment file so Django sees DATABASE_URL/SUPABASE_*:
+
+Example unit: `/etc/systemd/system/trauck.service`
+
+```
+[Service]
+EnvironmentFile=/opt/trauck/.env
+# ... rest of your existing configuration ...
+```
+
+Then reload and restart:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart trauck
+```
