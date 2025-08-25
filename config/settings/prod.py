@@ -78,11 +78,49 @@ EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")  # noqa: F405
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default=EMAIL_HOST_USER)  # noqa: F405
 
 # -----------------------------------------------------------------------------
-# Base de datos: usa DATABASE_URL si está definido, si no, fallback a sqlite
+# DB: prioridad DATABASE_URL + fallback Supabase (Pooler)
 # -----------------------------------------------------------------------------
-DATABASES = {
-    "default": env.db("DATABASE_URL", default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),  # noqa: F405
-}
+import os as _os, urllib.parse as _urllib
+import dj_database_url as _dj
+
+def _to_bool(v: str, default=False):
+    if v is None:
+        return default
+    return v.strip().lower() in {"1", "true", "yes", "y", "on"}
+
+_db_url = _os.getenv("DATABASE_URL")
+if _db_url:
+    DATABASES = {
+        "default": _dj.parse(
+            _db_url,
+            conn_max_age=int(_os.getenv("DB_CONN_MAX_AGE", "600")),
+            ssl_require=True,
+        )
+    }
+else:
+    use_pooler = _to_bool(_os.getenv("SUPABASE_USE_POOLER", "true"), default=True)
+    user = _os.getenv("SUPABASE_DB_USER", "postgres")
+    pwd = _os.getenv("SUPABASE_DB_PASSWORD", "")
+    dbname = _os.getenv("SUPABASE_DB_NAME", "postgres")
+    sslm = _os.getenv("DB_SSLMODE", "require")
+
+    if use_pooler:
+        host = _os.getenv("SUPABASE_POOLER_HOST", "")
+        port = _os.getenv("SUPABASE_POOLER_PORT", "6543")
+    else:
+        host = _os.getenv("SUPABASE_DIRECT_HOST", "")
+        port = _os.getenv("SUPABASE_DIRECT_PORT", "5432")
+
+    if host and pwd:
+        enc_pwd = _urllib.quote_plus(pwd)
+        _fallback_url = f"postgresql://{user}:{enc_pwd}@{host}:{port}/{dbname}?sslmode={sslm}"
+        DATABASES = {
+            "default": _dj.parse(
+                _fallback_url,
+                conn_max_age=int(_os.getenv("DB_CONN_MAX_AGE", "600")),
+                ssl_require=True,
+            )
+        }
 
 # -----------------------------------------------------------------------------
 # CORS (django-cors-headers)

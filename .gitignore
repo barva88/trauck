@@ -23,6 +23,7 @@ __pycache__/
 # Environments
 .venv/
 .env
+.env.local
 
 # Node
 node_modules

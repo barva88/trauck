@@ -173,9 +173,8 @@ sudo systemctl restart trauck
 ```bash
 cp .env.example .env
 # Rellenar:
-# - SUPABASE_DB_PASSWORD
-# - SUPABASE_POOLER_HOST (desde Supabase → Connection strings → Pooler)
-# Opcional: definir DATABASE_URL directamente y omitir el resto.
+#   - DATABASE_URL=postgresql://postgres:<PASSWORD>@<POOLER_HOST>:6543/postgres?sslmode=require
+#     (o, alternativamente, SUPABASE_DB_PASSWORD + SUPABASE_POOLER_HOST y SUPABASE_USE_POOLER=true)
 
 # Primera vez:
 python -m venv .venv && . .venv/bin/activate
@@ -192,3 +191,18 @@ PGPASSWORD="$SUPABASE_DB_PASSWORD" psql \
   -U ${SUPABASE_DB_USER:-postgres} -d ${SUPABASE_DB_NAME:-postgres} \
   "sslmode=require" -c "select now();"
 ```
+
+  Nota systemd (producción):
+
+  ```
+  [Service]
+  EnvironmentFile=/opt/trauck/.env
+  WorkingDirectory=/opt/trauck
+  ```
+
+  Luego:
+
+  ```bash
+  sudo systemctl daemon-reload
+  sudo systemctl restart <nombre-del-servicio>
+  ```
