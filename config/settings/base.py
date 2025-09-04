@@ -179,11 +179,19 @@ if not DATABASE_URL:
     enc_pwd = urllib.parse.quote_plus(pwd)
     DATABASE_URL = f"postgresql://{user}:{enc_pwd}@{host}:{port}/{dbname}?sslmode={sslm}"
 
+# Determine whether to require SSL for dj-database-url parsing.
+# For sqlite URLs ssl/sslmode options are not applicable and can break the
+# connection (sqlite backend doesn't accept sslmode), so disable ssl_require
+# when using sqlite.
+_ssl_require = True
+if DATABASE_URL and DATABASE_URL.startswith("sqlite:"):
+    _ssl_require = False
+
 DATABASES = {
     "default": dj_database_url.parse(
         DATABASE_URL,
         conn_max_age=int(os.getenv("DB_CONN_MAX_AGE", "600")),
-        ssl_require=True,
+        ssl_require=_ssl_require,
     )
 }
 
