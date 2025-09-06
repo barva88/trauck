@@ -157,6 +157,18 @@ def _bool(v: str, default: bool = False) -> bool:
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+# Development fallback: when running with DEBUG enabled and no DATABASE_URL
+# is provided, default to a local sqlite file so developers don't need to set
+# Supabase/Postgres vars for normal local work.
+# Note: `dev.py` sets DEBUG after importing base, so also consider the
+# DJANGO_SETTINGS_MODULE to detect the development settings early.
+settings_module = os.getenv("DJANGO_SETTINGS_MODULE", "")
+is_dev_settings = "dev" in settings_module.lower()
+
+if not DATABASE_URL and (DEBUG or is_dev_settings):
+    # Use BASE_DIR to build an absolute path to db.sqlite3
+    DATABASE_URL = f"sqlite:///{str(BASE_DIR / 'db.sqlite3')}"
+
 if not DATABASE_URL:
     use_pooler = _bool(os.getenv("SUPABASE_USE_POOLER", "true"), default=True)
     user = os.getenv("SUPABASE_DB_USER", "postgres")

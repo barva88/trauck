@@ -12,6 +12,16 @@ class PlanAdmin(admin.ModelAdmin):
     list_filter = ('is_active','renewal_interval')
     inlines = [PlanBenefitInline]
 
+    def save_model(self, request, obj, form, change):
+        # Prevent creating paid plans with zero credits via admin
+        try:
+            price = float(obj.price_usd or 0)
+        except Exception:
+            price = 0
+        if price > 0 and (not obj.credits_on_purchase or obj.credits_on_purchase <= 0):
+            obj.credits_on_purchase = 1  # sensible default to avoid zero-credit paid plan
+        super().save_model(request, obj, form, change)
+
 @admin.register(CreditWallet)
 class CreditWalletAdmin(admin.ModelAdmin):
     list_display = ('user','balance','created_at','updated_at')

@@ -12,6 +12,18 @@ class PlanSerializer(serializers.ModelSerializer):
         model = Plan
         fields = ('id','name','slug','is_active','price_usd','currency','credits_on_purchase','renewal_interval','exam_cost_credits','description','benefits','stripe_product_id','stripe_price_id')
 
+    def validate(self, data):
+        # If plan has a price > 0, ensure credits_on_purchase is positive
+        price = data.get('price_usd', None)
+        credits = data.get('credits_on_purchase', None)
+        # When updating, fields may be missing from data; fall back to instance
+        if self.instance:
+            price = price if price is not None else self.instance.price_usd
+            credits = credits if credits is not None else self.instance.credits_on_purchase
+        if price is not None and float(price) > 0 and (credits is None or int(credits) <= 0):
+            raise serializers.ValidationError('Paid plans must have credits_on_purchase > 0')
+        return data
+
 class CheckoutSerializer(serializers.Serializer):
     plan_id = serializers.IntegerField(required=False)
     pack_id = serializers.IntegerField(required=False)

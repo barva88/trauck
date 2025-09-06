@@ -180,7 +180,23 @@ def handle_checkout_completed(event):
     purchase.save(update_fields=['status','payment_intent_id','subscription_id','updated_at'])
 
     # Asegurar créditos al pagar
-    _credit_wallet(purchase.user, int(purchase.credits_granted or 0), 'Checkout completed', {'purchase_id': purchase.id})
+    # Si por alguna razón purchase.credits_granted es 0 (por ejemplo plan creado sin créditos),
+    # recalcular desde el plan y acreditar la cantidad adecuada.
+    credits_expected = 0
+    if purchase.plan:
+        credits_expected = int(getattr(purchase.plan, 'credits_on_purchase', 0) or 0)
+    elif purchase.credit_pack:
+        credits_expected = int(getattr(purchase.credit_pack, 'credits', 0) or 0)
+
+    # If purchase.credits_granted is zero, update it to the expected value
+    if not purchase.credits_granted and credits_expected > 0:
+        purchase.credits_granted = credits_expected
+        purchase.save(update_fields=['credits_granted','updated_at'])
+
+    # Determine how many credits to actually grant (could be 0 if already granted earlier)
+    to_grant = int(purchase.credits_granted or 0)
+    if to_grant > 0:
+        _credit_wallet(purchase.user, to_grant, 'Checkout completed', {'purchase_id': purchase.id})
     purchase.open_guarantee()
 
 
