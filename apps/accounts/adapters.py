@@ -18,10 +18,16 @@ class AccountAdapter(DefaultAccountAdapter):
             pass
 
     def get_login_redirect_url(self, request):
-        try:
-            return reverse('pages:index', host='dashboard')
-        except Exception:
-            return '/'
+        # Prefer a host-aware URL to the dashboard index when running with a
+        # configured PARENT_HOST so redirects after login/registration end up
+        # on the dashboard subdomain. Fall back to a relative path for dev.
+        parent = getattr(settings, 'PARENT_HOST', None)
+        if parent:
+            try:
+                return reverse('pages:index', host='dashboard')
+            except Exception:
+                return f"{getattr(settings,'HOST_SCHEME','https://')}dashboard.{parent}/"
+        return '/'
 
     def get_signup_redirect_url(self, request):
         return self.get_login_redirect_url(request)

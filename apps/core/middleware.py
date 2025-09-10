@@ -2,6 +2,7 @@ from django.conf import settings
 from django.shortcuts import redirect
 from django.utils.deprecation import MiddlewareMixin
 from django_hosts.resolvers import reverse
+from urllib.parse import urlparse
 
 
 class RequireLoginOnDashboardHost(MiddlewareMixin):
@@ -41,6 +42,14 @@ class RequireLoginOnDashboardHost(MiddlewareMixin):
                         login_url = f"{getattr(settings,'HOST_SCHEME','http://')}dashboard.{getattr(settings,'PARENT_HOST')}" + '/accounts/login/'
                 else:
                     login_url = '/accounts/login/'
-                if not request.path.startswith(login_url):
+
+                # Normalize: if login_url is absolute (has scheme), compare only paths
+                try:
+                    parsed = urlparse(login_url)
+                    compare_path = parsed.path or login_url
+                except Exception:
+                    compare_path = login_url
+
+                if not request.path.startswith(compare_path):
                     return redirect(login_url)
         return None
