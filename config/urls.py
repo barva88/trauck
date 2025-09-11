@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
 from django.urls import reverse, NoReverseMatch
 from django.views.generic import TemplateView
 from allauth.account.views import email_verification_sent
@@ -46,6 +46,15 @@ urlpatterns = [
     path('rtl/', RedirectView.as_view(pattern_name='pages:index', permanent=False), name='rtl'),
     path('upgrade/', RedirectView.as_view(pattern_name='pages:index', permanent=False), name='upgrade'),
     # dj-rest-auth (API)
+    # Override placeholder TemplateView endpoints from dj-rest-auth to provide
+    # actual templates so visiting the URLs doesn't raise ImproperlyConfigured.
+    re_path(r'^api/auth/registration/account-email-verification-sent/?$',
+        TemplateView.as_view(template_name='account/account_email_verification_sent.html'),
+        name='account_email_verification_sent'),
+    re_path(r'^api/auth/registration/account-confirm-email/(?P<key>[^/]+)/?$',
+        TemplateView.as_view(template_name='account/account_confirm_email.html'),
+        name='account_confirm_email'),
+
     path('api/auth/', include('dj_rest_auth.urls')),
     path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
     # Ensure the named view exists for verification sent pages

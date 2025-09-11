@@ -239,8 +239,28 @@ if PARENT_HOST:
     LOGIN_URL = f"{HOST_SCHEME}dashboard.{PARENT_HOST}/accounts/login/"
 else:
     LOGIN_URL = "/accounts/login/"
-EMAIL_BACKEND = env("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
-DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="no-reply@example.com")
+# Email configuration — prefer values from environment (.env).
+# Default to SMTP backend so production-like behavior can be tested locally.
+EMAIL_BACKEND = env("EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
+
+# SMTP / Gmail settings (all values come from .env)
+# Examples (in .env):
+#   EMAIL_HOST=smtp.gmail.com
+#   EMAIL_PORT=587
+#   EMAIL_HOST_USER=your@gmail.com
+#   EMAIL_HOST_PASSWORD=your-app-password
+#   EMAIL_USE_TLS=True
+#   EMAIL_USE_SSL=False
+EMAIL_HOST = env("EMAIL_HOST", default="smtp.gmail.com")
+EMAIL_PORT = env("EMAIL_PORT", default=587)
+# EMAIL_HOST_USER / PASSWORD: fall back to GMAIL_* names for convenience
+EMAIL_HOST_USER = env("EMAIL_HOST_USER", default=env("GMAIL_USER", default=""))
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default=env("GMAIL_PASSWORD", default=""))
+EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
+EMAIL_USE_SSL = env.bool("EMAIL_USE_SSL", default=False)
+
+# Default from email — use explicit env var or the SMTP user
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default=(EMAIL_HOST_USER or "no-reply@example.com"))
 
 DYNAMIC_DATATB = {
     "product": "apps.pages.models.Product",

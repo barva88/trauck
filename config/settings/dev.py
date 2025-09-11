@@ -22,8 +22,14 @@ STORAGES = {
 if "whitenoise.middleware.WhiteNoiseMiddleware" in MIDDLEWARE:
     MIDDLEWARE.remove("whitenoise.middleware.WhiteNoiseMiddleware")
 
-# Email in development: console backend (no actual delivery)
-EMAIL_BACKEND = env("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")  # noqa: F405
+# Email in development: prefer console backend unless SMTP credentials are present
+# If EMAIL_HOST_USER is set in .env we switch to SMTP so developers can test real
+# deliveries locally. Otherwise use console backend to avoid accidental sends.
+if env("EMAIL_HOST_USER", default=""):
+    EMAIL_BACKEND = env("EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")  # noqa: F405
+else:
+    EMAIL_BACKEND = env("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")  # noqa: F405
+
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="no-reply@example.com")  # noqa: F405
 
 

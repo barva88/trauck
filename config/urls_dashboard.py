@@ -1,8 +1,8 @@
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
 from django.conf import settings
 from django.conf.urls.static import static
-from django.views.generic import RedirectView
+from django.views.generic import RedirectView, TemplateView
 from django.contrib.auth.decorators import login_required
 
 # Wrap pages index behind login as a simple gate
@@ -18,6 +18,17 @@ urlpatterns = [
     # Compatibility shortcuts
     path('auth/signin/', RedirectView.as_view(pattern_name='account_login', permanent=False), name='auth_signin'),
     path('auth/signup/', RedirectView.as_view(pattern_name='account_signup', permanent=False), name='auth_signup'),
+
+    # dj-rest-auth (API)
+    # Add regex-based overrides that exactly match dj-rest-auth's internal
+    # patterns. This guarantees our TemplateView (with template_name) is
+    # resolved even if other includes register a TemplateView without one.
+    re_path(r'^api/auth/registration/account-email-verification-sent/?$',
+        TemplateView.as_view(template_name='account/account_email_verification_sent.html'),
+        name='account_email_verification_sent'),
+    re_path(r'^api/auth/registration/account-confirm-email/(?P<key>[^/]+)/?$',
+        TemplateView.as_view(template_name='account/account_confirm_email.html'),
+        name='account_confirm_email'),
 
     # dj-rest-auth (API)
     path('api/auth/', include('dj_rest_auth.urls')),
